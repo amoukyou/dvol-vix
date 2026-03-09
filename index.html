@@ -1144,26 +1144,82 @@ function drawCompareCharts(eventKey) {
     plugins:[syncPlugin(()=>btcChartHist)]
   });
 
-  // 右：当前
+  // 右：对照面板
+  // 当选中 iranoil 时，右边显示关税战作为对照；选中 tradewar 时，右边显示当前期间
+  const isIranEvent = (eventKey === 'iranoil');
+  const rightData = isIranEvent ? TRADEWAR_DAILY : CURRENT_DAILY;
+  const rightLabels = rightData.labels.map((l,i)=> rightData.weekdays ? l+' '+rightData.weekdays[i] : l);
+
+  // 右侧标题
+  const rightTitle = document.querySelector('.compare-card.right h3');
+  if(rightTitle) {
+    if(isIranEvent) {
+      rightTitle.textContent = '2025年4月 关税战对照 (4/1 - 4/30)';
+      rightTitle.style.color = 'var(--red)';
+    } else {
+      rightTitle.textContent = '2026年2-3月 本轮冲击 (2/20 - 3/9)';
+      rightTitle.style.color = 'var(--accent)';
+    }
+  }
+
+  // 右侧统计
+  const rightStatsDiv = document.getElementById('rightPanelStats');
+  if(rightStatsDiv) {
+    if(isIranEvent) {
+      rightStatsDiv.innerHTML = `
+        <div class="zoom-stat"><div class="zs-label">VIX 峰值</div><div class="zs-val" style="color:var(--purple);">52.3</div></div>
+        <div class="zoom-stat"><div class="zs-label">VIX 起点</div><div class="zs-val" style="color:var(--purple);">21.5</div></div>
+        <div class="zoom-stat"><div class="zs-label">VIX 涨幅</div><div class="zs-val" style="color:var(--red);">+143%</div></div>
+        <div class="zoom-stat"><div class="zs-label">DVOL 峰值</div><div class="zs-val" style="color:var(--orange);">110</div></div>
+        <div class="zoom-stat"><div class="zs-label">DVOL 起点</div><div class="zs-val" style="color:var(--orange);">60</div></div>
+        <div class="zoom-stat"><div class="zs-label">恢复用时</div><div class="zs-val" style="color:var(--green);">~3周</div></div>
+      `;
+    } else {
+      updateRightPanelStats();
+    }
+  }
+
+  // 右侧波动率图表注释
+  const rightAnno = {};
+  if(isIranEvent) {
+    // 关税战的事件注释
+    if(rightData.events) {
+      Object.entries(rightData.events).forEach(([idx,label])=>{
+        const xl = rightLabels[idx];
+        rightAnno['we'+idx]={type:'line',xMin:xl,xMax:xl,borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
+          label:{display:true,content:label,position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3,rotation:-45,yAdjust:-8}};
+      });
+    }
+    const rightVixPeak = Math.max(...rightData.vix);
+    rightAnno.peakLine={type:'line',yMin:rightVixPeak,yMax:rightVixPeak,yScaleID:'yVix',borderColor:'rgba(220,38,38,.3)',borderWidth:1,borderDash:[8,4],
+      label:{display:true,content:'VIX 峰值 '+rightVixPeak,position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}};
+    // 当前 VIX 参考线
+    const curVixVal = CURRENT_DAILY.vix[CURRENT_DAILY.vix.length-1];
+    rightAnno.curRef={type:'line',yMin:curVixVal,yMax:curVixVal,yScaleID:'yVix',borderColor:'rgba(37,99,235,.4)',borderWidth:1,borderDash:[8,4],
+      label:{display:true,content:'当前 VIX '+curVixVal,position:'start',color:'#2563eb',font:{size:9},backgroundColor:LBG,padding:3}};
+  } else {
+    rightAnno.iran={type:'line',xMin:'2/28 周五',xMax:'2/28 周五',borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
+      label:{display:true,content:'哈梅内伊遇袭',position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3}};
+    rightAnno.vixRef={type:'line',yMin:vixPeak,yMax:vixPeak,yScaleID:'yVix',borderColor:'rgba(220,38,38,.25)',borderWidth:1,borderDash:[8,4],
+      label:{display:true,content:sm.name+' VIX峰值 '+sm.vixPeak,position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}};
+  }
+
   zoomChartToday = new Chart(document.getElementById('chartZoomToday'),{
     type:'line',
-    data:{labels:tdLabels,datasets:[
-      {label:'DVOL',data:td.dvol,borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.08)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#b45309',tension:.3,yAxisID:'yDvol'},
-      {label:'VIX',data:td.vix,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.08)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#7c3aed',tension:.3,yAxisID:'yVix'}
+    data:{labels:rightLabels,datasets:[
+      {label:'DVOL',data:rightData.dvol,borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.08)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#b45309',tension:.3,yAxisID:'yDvol'},
+      {label:'VIX',data:rightData.vix,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.08)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#7c3aed',tension:.3,yAxisID:'yVix'}
     ]},
     options:{responsive:true,interaction:{mode:'index',intersect:false},
       scales:{
         x:{grid:{color:G},ticks:{color:T,font:{size:10}}},
-        yVix:{position:'left',grid:{color:G},ticks:{color:'#7c3aed',font:{size:9}},title:{display:true,text:'VIX',color:'#7c3aed'}},
-        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309',font:{size:9}},title:{display:true,text:'DVOL',color:'#b45309'}}
+        yVix:{position:'left',grid:{color:G},ticks:{color:'#7c3aed',font:{size:9}},title:{display:true,text:'VIX',color:'#7c3aed'},
+          min:Math.min(...rightData.vix)*0.8,max:Math.max(...rightData.vix)*1.1},
+        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309',font:{size:9}},title:{display:true,text:'DVOL',color:'#b45309'},
+          min:Math.min(...rightData.dvol)*0.8,max:Math.max(...rightData.dvol)*1.1}
       },
       plugins:{legend:{labels:{color:T,font:{size:11}}},
-        annotation:{annotations:{
-          iran:{type:'line',xMin:'2/28 周五',xMax:'2/28 周五',borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
-            label:{display:true,content:'哈梅内伊遇袭',position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3}},
-          vixRef:{type:'line',yMin:vixPeak,yMax:vixPeak,yScaleID:'yVix',borderColor:'rgba(220,38,38,.25)',borderWidth:1,borderDash:[8,4],
-            label:{display:true,content:sm.name+' VIX峰值 '+sm.vixPeak,position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}}
-        }}
+        annotation:{annotations:rightAnno}
       }
     },
     plugins:[syncPlugin(()=>btcChartToday)]
@@ -1171,7 +1227,7 @@ function drawCompareCharts(eventKey) {
 
   // BTC K线图
   btcChartHist = createCandleChart('chartBtcHist', wdLabels, wd.btcOHLC, wd.btcOHLC[0].o, ()=>zoomChartHist);
-  btcChartToday = createCandleChart('chartBtcToday', tdLabels, td.btcOHLC, td.btcOHLC[0].o, ()=>zoomChartToday);
+  btcChartToday = createCandleChart('chartBtcToday', rightLabels, rightData.btcOHLC, rightData.btcOHLC[0].o, ()=>zoomChartToday);
 
 }
 
