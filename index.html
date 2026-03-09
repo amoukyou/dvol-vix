@@ -599,7 +599,7 @@ function drawCharts(data) {
   KEY_EVENTS.forEach((ev,i)=>{
     if(labels.indexOf(ev.d)>=0) ea['ev'+i]={
       type:'line',xMin:ev.d,xMax:ev.d,borderColor:ev.color,borderWidth:1.5,borderDash:[4,4],
-      label:{display:true,content:ev.label,position:'start',color:ev.color,font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3,rotation:-90,yAdjust:-15}
+      label:{display:true,content:ev.label,position:'start',color:ev.color,font:{size:13,weight:'bold'},backgroundColor:LBG,padding:5,rotation:-90,yAdjust:-20}
     };
   });
 
