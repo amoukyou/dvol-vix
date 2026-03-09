@@ -737,17 +737,47 @@ function drawCompareCharts() {
     };
   }
 
-  // BTC tooltip 带涨跌幅浮标
-  function btcTooltip(btcData) {
+  // BTC tooltip + 线段颜色配置
+  function btcChartConfig(btcData) {
+    const first = btcData[0];
     return {
-      tooltip:{
-        callbacks:{
-          label(ctx) {
-            const v = ctx.parsed.y;
-            const first = btcData[0];
-            const pct = ((v - first)/first*100).toFixed(2);
-            const sign = pct >= 0 ? '+' : '';
-            return `BTC $${(v/1000).toFixed(1)}k  (${sign}${pct}%)`;
+      dataset: {
+        label:'BTC 价格',data:btcData,
+        borderWidth:2.5,pointRadius:3,tension:.3,fill:true,
+        segment:{
+          borderColor:ctx=>{
+            const v = ctx.p1.parsed.y;
+            return v >= first ? '#16a34a' : '#dc2626';
+          },
+          backgroundColor:ctx=>{
+            const v = ctx.p1.parsed.y;
+            return v >= first ? 'rgba(22,163,74,.12)' : 'rgba(220,38,38,.12)';
+          }
+        },
+        borderColor:'#16a34a',
+        backgroundColor:'rgba(22,163,74,.08)',
+        pointBackgroundColor: btcData.map(v=>v>=first?'#16a34a':'#dc2626')
+      },
+      tooltipPlugin: {
+        tooltip:{
+          backgroundColor:'rgba(0,0,0,.85)',
+          titleFont:{size:12,weight:'bold'},
+          bodyFont:{size:13,weight:'bold'},
+          padding:10,
+          cornerRadius:6,
+          callbacks:{
+            label(ctx) {
+              const v = ctx.parsed.y;
+              const pct = ((v - first)/first*100).toFixed(2);
+              const sign = pct >= 0 ? '+' : '';
+              const arrow = pct >= 0 ? '▲' : '▼';
+              return `BTC $${(v/1000).toFixed(1)}k   ${arrow} ${sign}${pct}%`;
+            },
+            labelColor(ctx) {
+              const v = ctx.parsed.y;
+              const c = v >= first ? '#16a34a' : '#dc2626';
+              return {borderColor:c, backgroundColor:c, borderWidth:2, borderRadius:2};
+            }
           }
         }
       }
@@ -812,33 +842,31 @@ function drawCompareCharts() {
   });
 
   // BTC 价格子图 - 关税战
+  const warBtcCfg = btcChartConfig(wd.btc);
   btcChartWar = new Chart(document.getElementById('chartBtcWar'),{
     type:'line',
-    data:{labels:wd.labels,datasets:[
-      {label:'BTC 价格',data:wd.btc,borderColor:'#0ea5e9',backgroundColor:'rgba(14,165,233,.1)',fill:true,borderWidth:2,pointRadius:3,pointBackgroundColor:'#0ea5e9',tension:.3}
-    ]},
+    data:{labels:wd.labels,datasets:[warBtcCfg.dataset]},
     options:{responsive:true,interaction:{mode:'index',intersect:false},
       scales:{
         x:{grid:{color:G},ticks:{color:T,font:{size:9}}},
-        y:{grid:{color:G},ticks:{color:'#0ea5e9',font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},title:{display:true,text:'BTC ($)',color:'#0ea5e9'}}
+        y:{grid:{color:G},ticks:{color:T,font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},title:{display:true,text:'BTC ($)',color:T}}
       },
-      plugins:{legend:{display:false},...btcTooltip(wd.btc)}
+      plugins:{legend:{display:false},...warBtcCfg.tooltipPlugin}
     },
     plugins:[syncPlugin(()=>zoomChartWar)]
   });
 
   // BTC 价格子图 - 今日日内
+  const todayBtcCfg = btcChartConfig(td.btc);
   btcChartToday = new Chart(document.getElementById('chartBtcToday'),{
     type:'line',
-    data:{labels:td.labels,datasets:[
-      {label:'BTC 价格',data:td.btc,borderColor:'#0ea5e9',backgroundColor:'rgba(14,165,233,.1)',fill:true,borderWidth:2,pointRadius:2,pointBackgroundColor:'#0ea5e9',tension:.3}
-    ]},
+    data:{labels:td.labels,datasets:[todayBtcCfg.dataset]},
     options:{responsive:true,interaction:{mode:'index',intersect:false},
       scales:{
         x:{grid:{color:G},ticks:{color:T,font:{size:9}}},
-        y:{grid:{color:G},ticks:{color:'#0ea5e9',font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},title:{display:true,text:'BTC ($)',color:'#0ea5e9'}}
+        y:{grid:{color:G},ticks:{color:T,font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},title:{display:true,text:'BTC ($)',color:T}}
       },
-      plugins:{legend:{display:false},...btcTooltip(td.btc)}
+      plugins:{legend:{display:false},...todayBtcCfg.tooltipPlugin}
     },
     plugins:[syncPlugin(()=>zoomChartToday)]
   });
