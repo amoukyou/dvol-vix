@@ -235,6 +235,10 @@
     <h3>DVOL 与 VIX 真实值走势（标注关键事件）</h3>
     <canvas id="chartOverlay"></canvas>
   </div>
+  <div class="chart-box full">
+    <h3>BTC 价格走势</h3>
+    <canvas id="chartBtcOverview" height="90"></canvas>
+  </div>
   <div class="chart-box">
     <h3>价差 (DVOL - VIX) 布林带</h3>
     <canvas id="chartSpread" height="140"></canvas>
@@ -449,6 +453,40 @@ const DVOL_HISTORY = [
   {d:'2026-03-06',dvol:74},{d:'2026-03-07',dvol:78},{d:'2026-03-09',dvol:80}
 ];
 
+const BTC_HISTORY = [
+  {d:'2024-01-02',btc:45200},{d:'2024-01-15',btc:43000},{d:'2024-01-31',btc:42500},
+  {d:'2024-02-15',btc:52000},{d:'2024-02-29',btc:62000},
+  {d:'2024-03-15',btc:73500},{d:'2024-03-29',btc:69500},
+  {d:'2024-04-12',btc:67500},{d:'2024-04-19',btc:63500},{d:'2024-04-30',btc:60500},
+  {d:'2024-05-15',btc:62000},{d:'2024-05-31',btc:67500},
+  {d:'2024-06-14',btc:66500},{d:'2024-06-28',btc:61000},
+  {d:'2024-07-11',btc:57500},{d:'2024-07-19',btc:63000},{d:'2024-07-31',btc:64500},
+  {d:'2024-08-02',btc:61500},{d:'2024-08-05',btc:49500},{d:'2024-08-06',btc:55000},
+  {d:'2024-08-09',btc:58500},{d:'2024-08-16',btc:59000},{d:'2024-08-30',btc:59000},
+  {d:'2024-09-06',btc:53500},{d:'2024-09-13',btc:58000},{d:'2024-09-30',btc:63500},
+  {d:'2024-10-15',btc:66000},{d:'2024-10-31',btc:72000},
+  {d:'2024-11-04',btc:69000},{d:'2024-11-06',btc:75000},{d:'2024-11-15',btc:88000},{d:'2024-11-29',btc:96000},
+  {d:'2024-12-13',btc:101000},{d:'2024-12-18',btc:106000},{d:'2024-12-20',btc:97000},{d:'2024-12-31',btc:93500},
+  {d:'2025-01-10',btc:94500},{d:'2025-01-17',btc:100000},{d:'2025-01-31',btc:104000},
+  {d:'2025-02-14',btc:97500},{d:'2025-02-28',btc:84000},
+  {d:'2025-03-10',btc:80000},{d:'2025-03-14',btc:83000},{d:'2025-03-31',btc:82500},
+  {d:'2025-04-02',btc:84000},{d:'2025-04-03',btc:83500},{d:'2025-04-04',btc:80000},
+  {d:'2025-04-07',btc:75200},{d:'2025-04-08',btc:74800},{d:'2025-04-09',btc:79500},
+  {d:'2025-04-14',btc:80500},{d:'2025-04-22',btc:83000},{d:'2025-04-30',btc:85000},
+  {d:'2025-05-09',btc:96000},{d:'2025-05-15',btc:103000},{d:'2025-05-23',btc:108000},{d:'2025-05-30',btc:107000},
+  {d:'2025-06-13',btc:105000},{d:'2025-06-30',btc:109000},
+  {d:'2025-07-11',btc:103000},{d:'2025-07-25',btc:106000},{d:'2025-07-31',btc:104000},
+  {d:'2025-08-08',btc:100000},{d:'2025-08-22',btc:103000},{d:'2025-08-29',btc:101000},
+  {d:'2025-09-12',btc:98000},{d:'2025-09-26',btc:101000},{d:'2025-09-30',btc:99000},
+  {d:'2025-10-10',btc:96000},{d:'2025-10-24',btc:100000},{d:'2025-10-31',btc:98000},
+  {d:'2025-11-07',btc:102000},{d:'2025-11-21',btc:105000},{d:'2025-11-28',btc:107000},
+  {d:'2025-12-12',btc:104000},{d:'2025-12-19',btc:98000},{d:'2025-12-31',btc:100000},
+  {d:'2026-01-09',btc:102000},{d:'2026-01-17',btc:105000},{d:'2026-01-30',btc:103000},
+  {d:'2026-02-06',btc:100000},{d:'2026-02-14',btc:102000},{d:'2026-02-27',btc:84200},
+  {d:'2026-03-02',btc:85000},{d:'2026-03-04',btc:82500},{d:'2026-03-05',btc:81000},
+  {d:'2026-03-06',btc:80200},{d:'2026-03-07',btc:79800},{d:'2026-03-09',btc:79500}
+];
+
 const KEY_EVENTS = [
   {d:'2024-08-05', label:'日元套利平仓恐慌', color:'#dc2626'},
   {d:'2024-11-06', label:'美国大选 (特朗普胜选)', color:'#b45309'},
@@ -551,7 +589,7 @@ function interpolateDaily(keypoints, startDate, endDate) {
       }
     }
     const bt = new Date(before.d).getTime(), at = new Date(after.d).getTime();
-    const val = before.vix !== undefined ? 'vix' : 'dvol';
+    const val = before.vix !== undefined ? 'vix' : before.dvol !== undefined ? 'dvol' : 'btc';
     if (at === bt) { result.push({d:ds, v:before[val]}); }
     else {
       const ratio = (dt - bt) / (at - bt);
@@ -563,14 +601,17 @@ function interpolateDaily(keypoints, startDate, endDate) {
 }
 
 function generateData(days) {
-  const data = { dates:[], dvol:[], vix:[], spread:[], ratio:[], corr:[] };
+  const data = { dates:[], dvol:[], vix:[], btc:[], spread:[], ratio:[], corr:[] };
   const now = new Date('2026-03-09');
   const startDate = new Date(now); startDate.setDate(startDate.getDate() - days);
-  const vixDaily = interpolateDaily(VIX_HISTORY, startDate.toISOString().slice(0,10), '2026-03-09');
-  const dvolDaily = interpolateDaily(DVOL_HISTORY, startDate.toISOString().slice(0,10), '2026-03-09');
-  const len = Math.min(vixDaily.length, dvolDaily.length);
+  const sd = startDate.toISOString().slice(0,10);
+  const vixDaily = interpolateDaily(VIX_HISTORY, sd, '2026-03-09');
+  const dvolDaily = interpolateDaily(DVOL_HISTORY, sd, '2026-03-09');
+  const btcDaily = interpolateDaily(BTC_HISTORY, sd, '2026-03-09');
+  const len = Math.min(vixDaily.length, dvolDaily.length, btcDaily.length);
   for (let i = 0; i < len; i++) {
     data.dates.push(vixDaily[i].d); data.vix.push(vixDaily[i].v); data.dvol.push(dvolDaily[i].v);
+    data.btc.push(Math.round(btcDaily[i].v));
     data.spread.push(+(dvolDaily[i].v - vixDaily[i].v).toFixed(2));
     data.ratio.push(+(dvolDaily[i].v / vixDaily[i].v).toFixed(3));
   }
@@ -663,6 +704,39 @@ function drawCharts(data) {
         yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309',font:{size:10}},title:{display:true,text:'DVOL',color:'#b45309'}}
       },
       plugins:{legend:{labels:{color:T}},annotation:{annotations:ea}}
+    }
+  });
+
+  // BTC 价格走势（红绿分段）
+  const btcFirst = data.btc[0];
+  chartInstances.btcOverview = new Chart(document.getElementById('chartBtcOverview'),{
+    type:'line',
+    data:{labels,datasets:[{
+      label:'BTC 价格',data:data.btc,borderWidth:2,pointRadius:0,tension:.3,fill:true,
+      segment:{
+        borderColor:ctx=>ctx.p1.parsed.y>=btcFirst?'#16a34a':'#dc2626',
+        backgroundColor:ctx=>ctx.p1.parsed.y>=btcFirst?'rgba(22,163,74,.08)':'rgba(220,38,38,.08)'
+      },
+      borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,.05)'
+    }]},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{grid:{color:G},ticks:{color:T,maxTicksLimit:16,font:{size:10}}},
+        y:{grid:{color:G},ticks:{color:T,font:{size:10},callback:v=>'$'+(v/1000).toFixed(0)+'k'},title:{display:true,text:'BTC ($)',color:T}}
+      },
+      plugins:{legend:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(15,15,15,.92)',bodyFont:{size:12,weight:'600'},displayColors:false,
+          callbacks:{
+            label(ctx){
+              const v=ctx.parsed.y;const pct=((v-btcFirst)/btcFirst*100).toFixed(1);
+              const s=pct>=0?'+':'';const a=pct>=0?'▲':'▼';
+              return `BTC $${(v/1000).toFixed(1)}k  ${a} ${s}${pct}%`;
+            },
+            labelTextColor(ctx){return ctx.parsed.y>=btcFirst?'#4ade80':'#f87171';}
+          }
+        }
+      }
     }
   });
 
