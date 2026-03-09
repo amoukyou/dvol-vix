@@ -945,6 +945,7 @@ function drawCompareCharts(eventKey) {
     label:{display:true,content:'VIX 峰值 '+vixPeak,position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}};
 
   // 组合日期+周几的标签
+  const td = CURRENT_DAILY;
   const wdLabels = wd.labels.map((l,i)=> wd.weekdays ? l+' '+wd.weekdays[i] : l);
   const tdLabels = td.labels.map((l,i)=> td.weekdays ? l+' '+td.weekdays[i] : l);
 
@@ -966,7 +967,6 @@ function drawCompareCharts(eventKey) {
   });
 
   // 右：当前
-  const td = CURRENT_DAILY;
   zoomChartToday = new Chart(document.getElementById('chartZoomToday'),{
     type:'line',
     data:{labels:tdLabels,datasets:[
