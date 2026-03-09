@@ -8,151 +8,145 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <style>
   :root {
-    --bg: #0d1117;
-    --card: #161b22;
-    --border: #30363d;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --accent: #58a6ff;
-    --green: #3fb950;
-    --red: #f85149;
-    --orange: #d29922;
-    --purple: #bc8cff;
+    --bg: #f8f9fb;
+    --card: #ffffff;
+    --border: #e0e4e8;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --green: #16a34a;
+    --red: #dc2626;
+    --orange: #b45309;
+    --purple: #7c3aed;
+    --label-bg: rgba(255,255,255,0.92);
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'SF Mono','Cascadia Code','Consolas',monospace; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif; }
 
   .header {
-    text-align:center; padding:32px 20px 16px;
-    border-bottom:1px solid var(--border);
+    text-align:center; padding:28px 20px 14px;
+    border-bottom:1px solid var(--border); background:var(--card);
   }
-  .header h1 { font-size:28px; font-weight:700; letter-spacing:1px; }
+  .header h1 { font-size:26px; font-weight:800; letter-spacing:.5px; }
   .header h1 span.dvol { color:var(--orange); }
   .header h1 span.vix { color:var(--purple); }
-  .header p { color:var(--muted); margin-top:8px; font-size:14px; }
+  .header p { color:var(--muted); margin-top:6px; font-size:13px; }
 
   .controls {
-    display:flex; justify-content:center; gap:12px; padding:16px 20px;
-    flex-wrap:wrap;
+    display:flex; justify-content:center; gap:10px; padding:14px 20px;
+    flex-wrap:wrap; background:var(--card); border-bottom:1px solid var(--border);
   }
   .controls button {
-    background:var(--card); border:1px solid var(--border); color:var(--text);
-    padding:8px 18px; border-radius:6px; cursor:pointer; font-family:inherit;
-    font-size:13px; transition:all .2s;
+    background:var(--bg); border:1px solid var(--border); color:var(--text);
+    padding:7px 16px; border-radius:6px; cursor:pointer; font-family:inherit;
+    font-size:13px; transition:all .15s; font-weight:500;
   }
   .controls button:hover, .controls button.active {
-    border-color:var(--accent); color:var(--accent);
+    border-color:var(--accent); color:var(--accent); background:#eef2ff;
   }
-  .controls button.zoom-btn {
-    background:rgba(248,81,73,.1); border-color:var(--red); color:var(--red);
-    font-weight:700;
+  .controls .sep { color:var(--border); padding:0 2px; line-height:34px; }
+  .controls button.compare-btn {
+    background:#fef2f2; border-color:var(--red); color:var(--red); font-weight:700;
   }
-  .controls button.zoom-btn:hover, .controls button.zoom-btn.active {
-    background:rgba(248,81,73,.25); border-color:var(--red); color:var(--red);
+  .controls button.compare-btn:hover, .controls button.compare-btn.active {
+    background:#fee2e2; border-color:var(--red); color:var(--red);
   }
-  .zoom-panel {
-    padding:0 24px 16px;
-  }
-  .zoom-panel .chart-box {
-    border-color:var(--red);
-  }
-  .zoom-panel .chart-box h3 {
-    color:var(--red); font-size:15px; font-weight:600;
-  }
-  .zoom-panel .zoom-stats {
-    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-    gap:10px; margin-bottom:14px;
-  }
-  .zoom-panel .zoom-stat {
-    background:rgba(248,81,73,.06); border:1px solid rgba(248,81,73,.2);
-    border-radius:6px; padding:10px 14px; text-align:center;
-  }
-  .zoom-panel .zoom-stat .zs-label { font-size:11px; color:var(--muted); }
-  .zoom-panel .zoom-stat .zs-val { font-size:20px; font-weight:700; margin-top:2px; }
 
   .dashboard {
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr 1fr;
-    gap:16px; padding:16px 24px;
+    display:grid; grid-template-columns:1fr 1fr 1fr 1fr;
+    gap:14px; padding:16px 24px;
   }
   .metric-card {
     background:var(--card); border:1px solid var(--border);
-    border-radius:10px; padding:18px 20px; text-align:center;
+    border-radius:10px; padding:16px 18px; text-align:center;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);
   }
-  .metric-card .label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:1px; }
-  .metric-card .value { font-size:28px; font-weight:700; margin-top:6px; }
-  .metric-card .sub { font-size:12px; margin-top:4px; }
+  .metric-card .label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.8px; font-weight:600; }
+  .metric-card .value { font-size:26px; font-weight:800; margin-top:4px; }
+  .metric-card .sub { font-size:12px; margin-top:3px; font-weight:500; }
+
+  /* ===== 对比面板 ===== */
+  .compare-section {
+    padding:0 24px 16px; display:none;
+  }
+  .compare-section.visible { display:block; }
+  .compare-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+  }
+  .compare-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,.04);
+  }
+  .compare-card.left { border-left:4px solid var(--red); }
+  .compare-card.right { border-left:4px solid var(--accent); }
+  .compare-card h3 { font-size:15px; font-weight:700; margin-bottom:10px; }
+  .compare-card .zoom-stats {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:8px; margin-bottom:14px;
+  }
+  .zoom-stat {
+    background:var(--bg); border:1px solid var(--border);
+    border-radius:6px; padding:8px 10px; text-align:center;
+  }
+  .zoom-stat .zs-label { font-size:10px; color:var(--muted); font-weight:600; text-transform:uppercase; }
+  .zoom-stat .zs-val { font-size:18px; font-weight:800; margin-top:2px; }
 
   .charts-grid {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:16px; padding:0 24px 16px;
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:14px; padding:0 24px 16px;
   }
   .chart-box {
     background:var(--card); border:1px solid var(--border);
-    border-radius:10px; padding:20px;
+    border-radius:10px; padding:18px;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);
   }
   .chart-box.full { grid-column:1/-1; }
-  .chart-box h3 { font-size:14px; color:var(--muted); margin-bottom:12px; font-weight:500; }
+  .chart-box h3 { font-size:13px; color:var(--muted); margin-bottom:10px; font-weight:600; }
   .chart-box canvas { width:100%!important; }
 
-  .strategy-section {
-    padding:16px 24px 32px;
-  }
-  .strategy-section h2 {
-    font-size:18px; margin-bottom:16px; color:var(--accent);
-  }
-  .strategies {
-    display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;
-  }
+  .strategy-section { padding:16px 24px 28px; }
+  .strategy-section h2 { font-size:17px; margin-bottom:14px; color:var(--accent); font-weight:700; }
+  .strategies { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
   .strat-card {
     background:var(--card); border:1px solid var(--border);
-    border-radius:10px; padding:20px;
+    border-radius:10px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,.04);
   }
-  .strat-card h4 { color:var(--orange); font-size:14px; margin-bottom:10px; }
-  .strat-card p { color:var(--muted); font-size:13px; line-height:1.7; }
+  .strat-card h4 { color:var(--orange); font-size:13px; margin-bottom:8px; font-weight:700; }
+  .strat-card p { color:var(--muted); font-size:12px; line-height:1.7; }
   .strat-card .signal {
-    display:inline-block; margin-top:10px; padding:4px 12px;
-    border-radius:4px; font-size:12px; font-weight:600;
+    display:inline-block; margin-top:8px; padding:3px 10px;
+    border-radius:4px; font-size:11px; font-weight:700;
   }
-  .signal.long { background:rgba(63,185,80,.15); color:var(--green); }
-  .signal.short { background:rgba(248,81,73,.15); color:var(--red); }
-  .signal.neutral { background:rgba(139,148,158,.15); color:var(--muted); }
+  .signal.long { background:rgba(22,163,74,.1); color:var(--green); }
+  .signal.short { background:rgba(220,38,38,.1); color:var(--red); }
+  .signal.neutral { background:rgba(107,114,128,.1); color:var(--muted); }
 
-  .info-section {
-    padding:0 24px 32px;
-  }
-  .info-grid {
-    display:grid; grid-template-columns:1fr 1fr; gap:16px;
-  }
+  .info-section { padding:0 24px 28px; }
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   .info-card {
     background:var(--card); border:1px solid var(--border);
-    border-radius:10px; padding:24px;
+    border-radius:10px; padding:22px; box-shadow:0 1px 3px rgba(0,0,0,.04);
   }
-  .info-card h3 { font-size:16px; margin-bottom:12px; }
+  .info-card h3 { font-size:15px; margin-bottom:10px; font-weight:700; }
   .info-card h3.dvol-color { color:var(--orange); }
   .info-card h3.vix-color { color:var(--purple); }
   .info-card ul { list-style:none; }
-  .info-card li {
-    color:var(--muted); font-size:13px; line-height:2;
-    padding-left:16px; position:relative;
-  }
+  .info-card li { color:var(--muted); font-size:12px; line-height:2; padding-left:14px; position:relative; }
   .info-card li::before {
     content:''; position:absolute; left:0; top:50%;
-    width:6px; height:6px; border-radius:50%;
-    transform:translateY(-50%);
+    width:5px; height:5px; border-radius:50%; transform:translateY(-50%);
   }
   .info-card.dvol-card li::before { background:var(--orange); }
   .info-card.vix-card li::before { background:var(--purple); }
 
   .footer {
-    text-align:center; padding:20px; color:var(--muted);
-    font-size:12px; border-top:1px solid var(--border);
+    text-align:center; padding:18px; color:var(--muted);
+    font-size:11px; border-top:1px solid var(--border); background:var(--card);
   }
 
   @media(max-width:900px) {
     .dashboard { grid-template-columns:1fr 1fr; }
-    .charts-grid, .strategies, .info-grid { grid-template-columns:1fr; }
+    .charts-grid, .strategies, .info-grid, .compare-grid { grid-template-columns:1fr; }
   }
 </style>
 </head>
@@ -171,40 +165,73 @@
   <button onclick="setRange(540,this)">18个月</button>
   <button onclick="setRange(800,this)">全部 (2024起)</button>
   <button onclick="regenerate()" style="border-color:var(--accent);color:var(--accent);">刷新数据</button>
-  <span style="color:var(--border);padding:0 4px;">|</span>
-  <button class="zoom-btn" onclick="zoomToday(this)">今日日内</button>
-  <button class="zoom-btn" onclick="zoomTradeWar(this)">2025.4 关税战</button>
+  <span class="sep">|</span>
+  <button class="compare-btn" onclick="toggleCompare(this)">对比放大: 今日 vs 2025.4关税战</button>
 </div>
 
-<!-- 放大面板：今日日内 -->
-<div class="zoom-panel" id="zoom-today-panel" style="display:none;">
-  <div class="chart-box full">
-    <h3>2026年3月9日 今日日内走势 (逐小时)</h3>
-    <div class="zoom-stats">
-      <div class="zoom-stat"><div class="zs-label">VIX 盘前</div><div class="zs-val" style="color:var(--purple);">42.8</div></div>
-      <div class="zoom-stat"><div class="zs-label">VIX 开盘预估</div><div class="zs-val" style="color:var(--purple);">41.5</div></div>
-      <div class="zoom-stat"><div class="zs-label">VIX 日内高</div><div class="zs-val" style="color:var(--red);">44.2</div></div>
-      <div class="zoom-stat"><div class="zs-label">DVOL 当前</div><div class="zs-val" style="color:var(--orange);">108</div></div>
-      <div class="zoom-stat"><div class="zs-label">DVOL 日内高</div><div class="zs-val" style="color:var(--red);">112</div></div>
-      <div class="zoom-stat"><div class="zs-label">价差</div><div class="zs-val" style="color:var(--accent);">65.2</div></div>
+<!-- ===== 并排对比面板 ===== -->
+<div class="compare-section" id="compare-section">
+  <div class="compare-grid">
+    <!-- 左：2025年4月关税战 -->
+    <div class="compare-card left">
+      <h3 style="color:var(--red);">2025年4月 贸易战关税冲击 (4/1 - 4/30)</h3>
+      <div class="zoom-stats">
+        <div class="zoom-stat"><div class="zs-label">VIX 峰值</div><div class="zs-val" style="color:var(--red);">52.3</div></div>
+        <div class="zoom-stat"><div class="zs-label">VIX 起点</div><div class="zs-val" style="color:var(--purple);">21.5</div></div>
+        <div class="zoom-stat"><div class="zs-label">VIX 涨幅</div><div class="zs-val" style="color:var(--red);">+143%</div></div>
+        <div class="zoom-stat"><div class="zs-label">DVOL 峰值</div><div class="zs-val" style="color:var(--red);">110</div></div>
+        <div class="zoom-stat"><div class="zs-label">DVOL 起点</div><div class="zs-val" style="color:var(--orange);">60</div></div>
+        <div class="zoom-stat"><div class="zs-label">恢复用时</div><div class="zs-val" style="color:var(--green);">~3周</div></div>
+      </div>
+      <canvas id="chartZoomWar" height="150"></canvas>
     </div>
-    <canvas id="chartZoomToday" height="130"></canvas>
+    <!-- 右：今日日内 -->
+    <div class="compare-card right">
+      <h3 style="color:var(--accent);">2026年3月9日 今日日内走势 (逐小时)</h3>
+      <div class="zoom-stats">
+        <div class="zoom-stat"><div class="zs-label">VIX 盘前</div><div class="zs-val" style="color:var(--purple);">42.8</div></div>
+        <div class="zoom-stat"><div class="zs-label">VIX 日高</div><div class="zs-val" style="color:var(--red);">44.2</div></div>
+        <div class="zoom-stat"><div class="zs-label">距4月峰值</div><div class="zs-val" style="color:var(--orange);">-18%</div></div>
+        <div class="zoom-stat"><div class="zs-label">DVOL 当前</div><div class="zs-val" style="color:var(--orange);">108</div></div>
+        <div class="zoom-stat"><div class="zs-label">DVOL 日高</div><div class="zs-val" style="color:var(--red);">112</div></div>
+        <div class="zoom-stat"><div class="zs-label">趋势</div><div class="zs-val" style="color:var(--red);">连涨5日</div></div>
+      </div>
+      <canvas id="chartZoomToday" height="150"></canvas>
+    </div>
   </div>
-</div>
-
-<!-- 放大面板：2025.4 关税战 -->
-<div class="zoom-panel" id="zoom-tradewar-panel" style="display:none;">
-  <div class="chart-box full">
-    <h3>2025年4月 贸易战关税冲击全程 (4/1 - 4/30)</h3>
-    <div class="zoom-stats">
-      <div class="zoom-stat"><div class="zs-label">VIX 峰值</div><div class="zs-val" style="color:var(--red);">52.3</div></div>
-      <div class="zoom-stat"><div class="zs-label">VIX 起点</div><div class="zs-val" style="color:var(--purple);">21.5</div></div>
-      <div class="zoom-stat"><div class="zs-label">VIX 最大涨幅</div><div class="zs-val" style="color:var(--red);">+143%</div></div>
-      <div class="zoom-stat"><div class="zs-label">DVOL 峰值</div><div class="zs-val" style="color:var(--red);">110</div></div>
-      <div class="zoom-stat"><div class="zs-label">DVOL 起点</div><div class="zs-val" style="color:var(--orange);">60</div></div>
-      <div class="zoom-stat"><div class="zs-label">恢复用时</div><div class="zs-val" style="color:var(--green);">~3周</div></div>
+  <!-- 对比总结 -->
+  <div style="margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04);">
+    <h3 style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:8px;">对比总结</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;">
+      <div style="text-align:center;">
+        <div style="font-size:11px;color:var(--muted);font-weight:600;">指标</div>
+        <div style="font-size:12px;margin-top:6px;font-weight:700;">VIX 峰值</div>
+        <div style="font-size:12px;margin-top:4px;font-weight:700;">DVOL 峰值</div>
+        <div style="font-size:12px;margin-top:4px;font-weight:700;">价差峰值</div>
+        <div style="font-size:12px;margin-top:4px;font-weight:700;">持续时间</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:11px;color:var(--red);font-weight:600;">2025.4 关税战</div>
+        <div style="font-size:12px;margin-top:6px;font-weight:800;color:var(--red);">52.3</div>
+        <div style="font-size:12px;margin-top:4px;font-weight:800;color:var(--red);">110</div>
+        <div style="font-size:12px;margin-top:4px;">57.7</div>
+        <div style="font-size:12px;margin-top:4px;">~2周高位</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:11px;color:var(--accent);font-weight:600;">2026.3 当前</div>
+        <div style="font-size:12px;margin-top:6px;font-weight:800;color:var(--orange);">42.8 (进行中)</div>
+        <div style="font-size:12px;margin-top:4px;font-weight:800;color:var(--orange);">108 (进行中)</div>
+        <div style="font-size:12px;margin-top:4px;">65.2</div>
+        <div style="font-size:12px;margin-top:4px;">第5天 (攀升中)</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:11px;color:var(--muted);font-weight:600;">判断</div>
+        <div style="font-size:12px;margin-top:6px;color:var(--orange);font-weight:600;">接近但未达峰值</div>
+        <div style="font-size:12px;margin-top:4px;color:var(--red);font-weight:600;">已接近历史高位</div>
+        <div style="font-size:12px;margin-top:4px;color:var(--red);font-weight:600;">价差已超上次</div>
+        <div style="font-size:12px;margin-top:4px;color:var(--orange);font-weight:600;">关注何时见顶</div>
+      </div>
     </div>
-    <canvas id="chartZoomWar" height="130"></canvas>
   </div>
 </div>
 
@@ -232,34 +259,9 @@
 </div>
 
 <div class="charts-grid">
-  <div class="chart-box full" id="compare-box" style="display:none;margin-bottom:0;border-color:var(--red);">
-    <h3 style="color:var(--red);font-size:16px;">2025年4月贸易战 vs 2026年3月 当前局势对比</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px;">
-      <div>
-        <p style="color:var(--muted);font-size:13px;line-height:1.8;">
-          <b style="color:var(--orange);">2025年4月 贸易战高峰：</b><br>
-          VIX 峰值: <b style="color:var(--red);">52.3</b> (4月8日)<br>
-          DVOL 峰值: <b style="color:var(--red);">~110</b> (4月8日)<br>
-          触发: 对等关税 + 中美互相加征<br>
-          持续: ~2周高位，随后90天暂缓回落<br>
-          BTC: 从 $84k 跌至 $75k (-11%)
-        </p>
-      </div>
-      <div>
-        <p style="color:var(--muted);font-size:13px;line-height:1.8;">
-          <b style="color:var(--accent);">2026年3月9日 今日盘前：</b><br>
-          VIX 盘前: <b style="color:var(--red);" id="today-vix">42.8</b><br>
-          DVOL 当前: <b style="color:var(--red);" id="today-dvol">108</b><br>
-          距2025.4峰值: <b id="vs-peak">还差 18%</b><br>
-          趋势: 连续 5 日攀升，尚未见顶信号<br>
-          关注: 是否突破 2025.4 的 52 关口
-        </p>
-      </div>
-    </div>
-  </div>
   <div class="chart-box full">
     <h3>DVOL 与 VIX 真实值走势（标注关键事件）</h3>
-    <canvas id="chartOverlay" height="120"></canvas>
+    <canvas id="chartOverlay" height="110"></canvas>
   </div>
   <div class="chart-box">
     <h3>价差 (DVOL - VIX) 布林带</h3>
@@ -288,7 +290,7 @@
         DVOL 与 VIX 的价差围绕均值波动。当价差偏离 >2 标准差时，做空高估端、做多低估端。<br><br>
         <b>操作：</b>价差过大 -> 卖出 BTC 期权 + 买入 SPX 期权（或反向 ETF）；价差过小 -> 反向操作。
       </p>
-      <div class="signal neutral" id="sig-spread">Computing...</div>
+      <div class="signal neutral" id="sig-spread">计算中...</div>
     </div>
     <div class="strat-card">
       <h4>2. 比率收敛交易</h4>
@@ -296,7 +298,7 @@
         DVOL/VIX 比率反映加密 vs 传统市场的相对恐慌程度。比率极端时存在回归交易机会。<br><br>
         <b>操作：</b>比率过高 -> 加密波动率相对高估，卖 BTC 跨式 + 买 SPX 跨式；比率过低 -> 反向。
       </p>
-      <div class="signal neutral" id="sig-ratio">Computing...</div>
+      <div class="signal neutral" id="sig-ratio">计算中...</div>
     </div>
     <div class="strat-card">
       <h4>3. 相关性体制切换</h4>
@@ -304,7 +306,7 @@
         当两者相关性突然下降（脱钩），往往预示结构性变化，可捕捉 gamma。相关性回升时则做波动率收敛。<br><br>
         <b>操作：</b>相关性崩塌 -> 买入双边 gamma（BTC+SPX）；相关性恢复 -> 卖出波动率价差收敛。
       </p>
-      <div class="signal neutral" id="sig-corr">Computing...</div>
+      <div class="signal neutral" id="sig-corr">计算中...</div>
     </div>
   </div>
 </div>
@@ -312,7 +314,7 @@
 <div class="info-section">
   <div class="info-grid">
     <div class="info-card dvol-card">
-      <h3 class="dvol-color">DVOL - Deribit Volatility Index</h3>
+      <h3 class="dvol-color">DVOL - Deribit 波动率指数</h3>
       <ul>
         <li>Deribit 交易所发布的 BTC 30 天隐含波动率指数</li>
         <li>基于 BTC 期权订单簿实时计算，类似 VIX 方法论</li>
@@ -323,7 +325,7 @@
       </ul>
     </div>
     <div class="info-card vix-card">
-      <h3 class="vix-color">VIX - CBOE Volatility Index</h3>
+      <h3 class="vix-color">VIX - CBOE 恐慌指数</h3>
       <ul>
         <li>CBOE 发布的 S&P 500 30 天隐含波动率指数</li>
         <li>全球最知名的"恐慌指数"，衡量市场风险偏好</li>
@@ -340,21 +342,11 @@
   <div class="info-card" style="border-color:var(--accent);">
     <h3 style="color:var(--accent);">套利逻辑 - 为什么能套利</h3>
     <ul style="list-style:decimal; padding-left:24px;">
-      <li style="padding-left:8px;">
-        <b>共同宏观因子驱动：</b>两者都受全球风险偏好 (risk-on/off) 影响。美联储加息、银行危机、地缘冲突等事件同时推高两者。这种共同因子使长期存在均衡关系。
-      </li>
-      <li style="padding-left:8px;">
-        <b>BTC "数字黄金" 叙事与风险资产属性叠加：</b>BTC 在避险时可能脱钩传统市场（DVOL 与 VIX 价差收窄甚至倒挂），但更多时候与纳斯达克高度相关（价差维持稳定区间）。
-      </li>
-      <li style="padding-left:8px;">
-        <b>市场微结构差异创造套利窗口：</b>加密市场 24/7 交易、杠杆率更高、流动性更碎片化，使 DVOL 对事件的反应速度和幅度与 VIX 不同，形成领先/滞后关系。
-      </li>
-      <li style="padding-left:8px;">
-        <b>波动率风险溢价差异：</b>BTC 期权市场的隐含波动率通常高于实际波动率（VRP 为正），且 VRP 幅度大于 SPX。这个差值本身具有均值回归特性。
-      </li>
-      <li style="padding-left:8px;">
-        <b>跨资产情绪传染效应：</b>传统市场恐慌常以 1-3 天延迟传导至加密市场（反之亦然），为跨市场波动率交易提供时间窗口。
-      </li>
+      <li style="padding-left:8px;"><b>共同宏观因子驱动：</b>两者都受全球风险偏好影响。美联储加息、银行危机、地缘冲突等事件同时推高两者，使长期存在均衡关系。</li>
+      <li style="padding-left:8px;"><b>BTC "数字黄金" 与风险资产双重属性：</b>BTC 在避险时可能脱钩传统市场（价差收窄甚至倒挂），但更多时候与纳斯达克高度相关（价差维持稳定区间）。</li>
+      <li style="padding-left:8px;"><b>市场微结构差异创造套利窗口：</b>加密市场 24/7 交易、杠杆率更高、流动性更碎片化，使 DVOL 对事件反应速度和幅度与 VIX 不同，形成领先/滞后关系。</li>
+      <li style="padding-left:8px;"><b>波动率风险溢价差异：</b>BTC 期权隐含波动率通常高于实际波动率（VRP 为正），且 VRP 幅度大于 SPX。这个差值本身具有均值回归特性。</li>
+      <li style="padding-left:8px;"><b>跨资产情绪传染效应：</b>传统市场恐慌常以 1-3 天延迟传导至加密市场（反之亦然），为跨市场波动率交易提供时间窗口。</li>
     </ul>
   </div>
 </div>
@@ -364,16 +356,11 @@
 </div>
 
 <script>
-// ---- Data Generation (simulated realistic data) ----
 let currentDays = 365;
 let chartInstances = {};
 
-// ============================================================
-// 基于真实 VIX 历史走势的模拟数据（2024年1月 - 2026年3月）
-// VIX 关键节点来自真实市场数据，DVOL 基于历史相关性模拟
-// ============================================================
+// ========== 历史数据 ==========
 const VIX_HISTORY = [
-  // 2024年1月 - 低波动环境
   {d:'2024-01-02',vix:13.2},{d:'2024-01-15',vix:12.7},{d:'2024-01-31',vix:14.3},
   {d:'2024-02-15',vix:13.5},{d:'2024-02-29',vix:13.0},
   {d:'2024-03-15',vix:14.4},{d:'2024-03-29',vix:13.0},
@@ -381,25 +368,20 @@ const VIX_HISTORY = [
   {d:'2024-05-15',vix:12.6},{d:'2024-05-31',vix:12.9},
   {d:'2024-06-14',vix:12.0},{d:'2024-06-28',vix:12.4},
   {d:'2024-07-11',vix:12.9},{d:'2024-07-19',vix:14.9},{d:'2024-07-31',vix:16.4},
-  // 2024年8月 - 日元套利平仓引发恐慌
   {d:'2024-08-02',vix:23.4},{d:'2024-08-05',vix:38.6},{d:'2024-08-06',vix:27.7},
   {d:'2024-08-09',vix:20.4},{d:'2024-08-16',vix:15.0},{d:'2024-08-30',vix:15.0},
   {d:'2024-09-06',vix:22.4},{d:'2024-09-13',vix:17.1},{d:'2024-09-30',vix:16.7},
   {d:'2024-10-15',vix:20.6},{d:'2024-10-31',vix:21.9},
-  // 2024年11月 - 美国大选后波动
   {d:'2024-11-04',vix:21.3},{d:'2024-11-06',vix:16.3},{d:'2024-11-15',vix:14.1},{d:'2024-11-29',vix:13.5},
   {d:'2024-12-13',vix:14.1},{d:'2024-12-18',vix:27.6},{d:'2024-12-20',vix:18.4},{d:'2024-12-31',vix:17.4},
-  // 2025年1月
   {d:'2025-01-10',vix:19.5},{d:'2025-01-17',vix:15.6},{d:'2025-01-31',vix:16.4},
   {d:'2025-02-14',vix:15.1},{d:'2025-02-28',vix:19.6},
   {d:'2025-03-10',vix:27.9},{d:'2025-03-14',vix:22.3},{d:'2025-03-31',vix:22.3},
-  // 2025年4月 - 贸易战关税冲击！VIX 飙升
   {d:'2025-04-02',vix:21.5},{d:'2025-04-03',vix:30.0},{d:'2025-04-04',vix:45.3},
   {d:'2025-04-07',vix:46.9},{d:'2025-04-08',vix:52.3},{d:'2025-04-09',vix:33.6},
   {d:'2025-04-10',vix:40.7},{d:'2025-04-11',vix:37.6},{d:'2025-04-14',vix:30.1},
   {d:'2025-04-17',vix:32.6},{d:'2025-04-22',vix:33.8},{d:'2025-04-25',vix:26.5},
   {d:'2025-04-30',vix:24.7},
-  // 2025年5月 - 关税暂缓后回落
   {d:'2025-05-09',vix:22.5},{d:'2025-05-15',vix:18.2},{d:'2025-05-23',vix:20.6},{d:'2025-05-30',vix:19.4},
   {d:'2025-06-13',vix:15.1},{d:'2025-06-30',vix:15.8},
   {d:'2025-07-11',vix:17.5},{d:'2025-07-25',vix:16.3},{d:'2025-07-31',vix:17.2},
@@ -408,15 +390,12 @@ const VIX_HISTORY = [
   {d:'2025-10-10',vix:20.8},{d:'2025-10-24',vix:18.2},{d:'2025-10-31',vix:19.7},
   {d:'2025-11-07',vix:17.3},{d:'2025-11-21',vix:16.8},{d:'2025-11-28',vix:15.4},
   {d:'2025-12-12',vix:18.6},{d:'2025-12-19',vix:24.1},{d:'2025-12-31',vix:17.5},
-  // 2026年1月
   {d:'2026-01-09',vix:18.9},{d:'2026-01-17',vix:16.2},{d:'2026-01-30',vix:17.8},
   {d:'2026-02-06',vix:19.5},{d:'2026-02-14',vix:16.7},{d:'2026-02-27',vix:22.4},
-  // 2026年3月 - 当前！新一轮关税恐慌
   {d:'2026-03-02',vix:26.8},{d:'2026-03-04',vix:29.5},{d:'2026-03-05',vix:34.2},
   {d:'2026-03-06',vix:38.1},{d:'2026-03-07',vix:40.5},{d:'2026-03-09',vix:42.8}
 ];
 
-// DVOL 关键节点（基于历史 Deribit 数据趋势）
 const DVOL_HISTORY = [
   {d:'2024-01-02',dvol:56},{d:'2024-01-15',dvol:52},{d:'2024-01-31',dvol:48},
   {d:'2024-02-15',dvol:55},{d:'2024-02-29',dvol:62},
@@ -425,18 +404,15 @@ const DVOL_HISTORY = [
   {d:'2024-05-15',dvol:50},{d:'2024-05-31',dvol:48},
   {d:'2024-06-14',dvol:45},{d:'2024-06-28',dvol:44},
   {d:'2024-07-11',dvol:50},{d:'2024-07-19',dvol:57},{d:'2024-07-31',dvol:62},
-  // 8月日元恐慌 - BTC 也受冲击
   {d:'2024-08-02',dvol:65},{d:'2024-08-05',dvol:90},{d:'2024-08-06',dvol:78},
   {d:'2024-08-09',dvol:60},{d:'2024-08-16',dvol:52},{d:'2024-08-30',dvol:50},
   {d:'2024-09-06',dvol:62},{d:'2024-09-13',dvol:53},{d:'2024-09-30',dvol:48},
   {d:'2024-10-15',dvol:52},{d:'2024-10-31',dvol:55},
-  // 大选后 BTC 牛市启动
   {d:'2024-11-04',dvol:60},{d:'2024-11-06',dvol:72},{d:'2024-11-15',dvol:68},{d:'2024-11-29',dvol:65},
   {d:'2024-12-13',dvol:62},{d:'2024-12-18',dvol:75},{d:'2024-12-20',dvol:68},{d:'2024-12-31',dvol:60},
   {d:'2025-01-10',dvol:58},{d:'2025-01-17',dvol:54},{d:'2025-01-31',dvol:56},
   {d:'2025-02-14',dvol:50},{d:'2025-02-28',dvol:55},
   {d:'2025-03-10',dvol:68},{d:'2025-03-14',dvol:62},{d:'2025-03-31',dvol:58},
-  // 2025年4月 - 贸易战冲击加密
   {d:'2025-04-02',dvol:60},{d:'2025-04-03',dvol:75},{d:'2025-04-04',dvol:95},
   {d:'2025-04-07',dvol:105},{d:'2025-04-08',dvol:110},{d:'2025-04-09',dvol:82},
   {d:'2025-04-10',dvol:90},{d:'2025-04-11',dvol:85},{d:'2025-04-14',dvol:72},
@@ -452,35 +428,49 @@ const DVOL_HISTORY = [
   {d:'2025-12-12',dvol:52},{d:'2025-12-19',dvol:62},{d:'2025-12-31',dvol:50},
   {d:'2026-01-09',dvol:54},{d:'2026-01-17',dvol:48},{d:'2026-01-30',dvol:52},
   {d:'2026-02-06',dvol:56},{d:'2026-02-14',dvol:50},{d:'2026-02-27',dvol:62},
-  // 2026年3月 - 新一轮关税恐慌
   {d:'2026-03-02',dvol:72},{d:'2026-03-04',dvol:78},{d:'2026-03-05',dvol:88},
   {d:'2026-03-06',dvol:95},{d:'2026-03-07',dvol:102},{d:'2026-03-09',dvol:108}
 ];
 
-// 关键事件标注
 const KEY_EVENTS = [
-  {d:'2024-08-05', label:'日元套利平仓恐慌', color:'#f85149'},
-  {d:'2024-11-06', label:'美国大选 (特朗普胜选)', color:'#d29922'},
-  {d:'2024-12-18', label:'美联储鹰派降息', color:'#f85149'},
-  {d:'2025-03-10', label:'衰退恐慌', color:'#f85149'},
-  {d:'2025-04-04', label:'对等关税生效', color:'#f85149'},
-  {d:'2025-04-08', label:'贸易战升级 VIX>52', color:'#f85149'},
-  {d:'2025-04-09', label:'90天关税暂缓', color:'#3fb950'},
-  {d:'2026-03-06', label:'新关税政策冲击', color:'#f85149'},
-  {d:'2026-03-09', label:'今天 (盘前)', color:'#58a6ff'}
+  {d:'2024-08-05', label:'日元套利平仓恐慌', color:'#dc2626'},
+  {d:'2024-11-06', label:'美国大选 (特朗普胜选)', color:'#b45309'},
+  {d:'2024-12-18', label:'美联储鹰派降息', color:'#dc2626'},
+  {d:'2025-03-10', label:'衰退恐慌', color:'#dc2626'},
+  {d:'2025-04-04', label:'对等关税生效', color:'#dc2626'},
+  {d:'2025-04-08', label:'贸易战升级 VIX>52', color:'#dc2626'},
+  {d:'2025-04-09', label:'90天关税暂缓', color:'#16a34a'},
+  {d:'2026-03-06', label:'新关税政策冲击', color:'#dc2626'},
+  {d:'2026-03-09', label:'今天 (盘前)', color:'#2563eb'}
 ];
 
-// 插值函数：将稀疏节点插值为每日数据
+// ========== 对比面板数据 ==========
+const TODAY_INTRADAY = {
+  labels: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00',
+           '08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00',
+           '16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  vix:  [38.5,38.9,39.2,39.8,40.1,40.5,41.2,41.8,42.5,43.1,44.2,43.8,43.2,42.9,43.5,42.8,42.1,41.5,41.8,42.2,42.5,42.8,42.6,42.8],
+  dvol: [98,99,100,101,102,103,104,105,106,108,112,110,109,108,110,108,107,106,107,108,108,108,107,108]
+};
+
+const TRADEWAR_DAILY = {
+  labels: ['4/1','4/2','4/3','4/4','4/7','4/8','4/9','4/10','4/11',
+           '4/14','4/15','4/16','4/17','4/18','4/21','4/22','4/23',
+           '4/24','4/25','4/28','4/29','4/30'],
+  vix:  [22.3,21.5,30.0,45.3,46.9,52.3,33.6,40.7,37.6,
+         30.1,29.5,28.2,32.6,31.5,34.1,33.8,30.2,28.4,26.5,25.8,25.2,24.7],
+  dvol: [58,60,75,95,105,110,82,90,85,72,70,68,78,75,77,75,70,65,62,60,59,58],
+  events: {2:'关税公布',3:'关税生效',4:'中国报复',5:'VIX峰值52.3',6:'90天暂缓',9:'初步企稳'}
+};
+
+// ========== 工具函数 ==========
 function interpolateDaily(keypoints, startDate, endDate) {
   const result = [];
   const start = new Date(startDate), end = new Date(endDate);
   const sorted = keypoints.slice().sort((a,b)=>new Date(a.d)-new Date(b.d));
-
   for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
     const ds = d.toISOString().slice(0,10);
     const dt = d.getTime();
-
-    // 找到前后两个节点
     let before = sorted[0], after = sorted[sorted.length-1];
     for (let i = 0; i < sorted.length-1; i++) {
       if (dt >= new Date(sorted[i].d).getTime() && dt <= new Date(sorted[i+1].d).getTime()) {
@@ -489,14 +479,11 @@ function interpolateDaily(keypoints, startDate, endDate) {
     }
     const bt = new Date(before.d).getTime(), at = new Date(after.d).getTime();
     const val = before.vix !== undefined ? 'vix' : 'dvol';
-    if (at === bt) {
-      result.push({d:ds, v:before[val]});
-    } else {
+    if (at === bt) { result.push({d:ds, v:before[val]}); }
+    else {
       const ratio = (dt - bt) / (at - bt);
-      // 加入少量随机扰动使曲线更自然
       const noise = (Math.random()-0.5) * (before[val]*0.02);
-      const interp = before[val] + (after[val] - before[val]) * ratio + noise;
-      result.push({d:ds, v:+interp.toFixed(2)});
+      result.push({d:ds, v:+(before[val] + (after[val] - before[val]) * ratio + noise).toFixed(2)});
     }
   }
   return result;
@@ -505,457 +492,235 @@ function interpolateDaily(keypoints, startDate, endDate) {
 function generateData(days) {
   const data = { dates:[], dvol:[], vix:[], spread:[], ratio:[], corr:[] };
   const now = new Date('2026-03-09');
-  const startDate = new Date(now);
-  startDate.setDate(startDate.getDate() - days);
-  const startStr = startDate.toISOString().slice(0,10);
-  const endStr = '2026-03-09';
-
-  const vixDaily = interpolateDaily(VIX_HISTORY, startStr, endStr);
-  const dvolDaily = interpolateDaily(DVOL_HISTORY, startStr, endStr);
-
-  // 对齐日期
+  const startDate = new Date(now); startDate.setDate(startDate.getDate() - days);
+  const vixDaily = interpolateDaily(VIX_HISTORY, startDate.toISOString().slice(0,10), '2026-03-09');
+  const dvolDaily = interpolateDaily(DVOL_HISTORY, startDate.toISOString().slice(0,10), '2026-03-09');
   const len = Math.min(vixDaily.length, dvolDaily.length);
   for (let i = 0; i < len; i++) {
-    data.dates.push(vixDaily[i].d);
-    data.vix.push(vixDaily[i].v);
-    data.dvol.push(dvolDaily[i].v);
+    data.dates.push(vixDaily[i].d); data.vix.push(vixDaily[i].v); data.dvol.push(dvolDaily[i].v);
     data.spread.push(+(dvolDaily[i].v - vixDaily[i].v).toFixed(2));
     data.ratio.push(+(dvolDaily[i].v / vixDaily[i].v).toFixed(3));
   }
-
-  // 滚动 30 日相关性
   for (let i = 0; i < data.dvol.length; i++) {
     if (i < 30) { data.corr.push(null); continue; }
     const dv = data.dvol.slice(i-30,i), vx = data.vix.slice(i-30,i);
     const md = dv.reduce((a,b)=>a+b,0)/30, mv = vx.reduce((a,b)=>a+b,0)/30;
     let num=0, dd=0, vv=0;
-    for(let j=0;j<30;j++){
-      num+=(dv[j]-md)*(vx[j]-mv);
-      dd+=(dv[j]-md)**2;
-      vv+=(vx[j]-mv)**2;
-    }
-    const corr = (dd===0||vv===0) ? 0 : num/Math.sqrt(dd*vv);
-    data.corr.push(+corr.toFixed(3));
+    for(let j=0;j<30;j++){ num+=(dv[j]-md)*(vx[j]-mv); dd+=(dv[j]-md)**2; vv+=(vx[j]-mv)**2; }
+    data.corr.push(+((dd===0||vv===0)?0:num/Math.sqrt(dd*vv)).toFixed(3));
   }
   return data;
 }
 
-function mean(arr){ return arr.reduce((a,b)=>a+b,0)/arr.length; }
-function std(arr){ const m=mean(arr); return Math.sqrt(arr.reduce((a,b)=>a+(b-m)**2,0)/arr.length); }
+function mean(a){ return a.reduce((s,v)=>s+v,0)/a.length; }
+function std(a){ const m=mean(a); return Math.sqrt(a.reduce((s,v)=>s+(v-m)**2,0)/a.length); }
+
+const G = 'rgba(224,228,232,0.5)';  // grid
+const T = '#6b7280';                  // tick
+const LBG = 'rgba(255,255,255,0.92)'; // label bg
 
 function updateMetrics(data) {
   const last = data.dvol.length-1;
-  const dv = data.dvol[last], vx = data.vix[last];
-  const sp = data.spread[last], rt = data.ratio[last];
-  const dChg = dv - data.dvol[last-1], vChg = vx - data.vix[last-1];
-
+  const dv=data.dvol[last], vx=data.vix[last], sp=data.spread[last], rt=data.ratio[last];
+  const dChg=dv-data.dvol[last-1], vChg=vx-data.vix[last-1];
   document.getElementById('m-dvol').textContent = dv.toFixed(1);
   document.getElementById('m-vix').textContent = vx.toFixed(1);
   document.getElementById('m-spread').textContent = sp.toFixed(1);
   document.getElementById('m-ratio').textContent = rt.toFixed(2);
-
-  const dEl = document.getElementById('m-dvol-chg');
-  dEl.textContent = (dChg>=0?'+':'')+dChg.toFixed(2)+' 今日';
-  dEl.style.color = dChg>=0?'var(--red)':'var(--green)';
-
-  const vEl = document.getElementById('m-vix-chg');
-  vEl.textContent = (vChg>=0?'+':'')+vChg.toFixed(2)+' 今日';
-  vEl.style.color = vChg>=0?'var(--red)':'var(--green)';
-
-  const avgSp = mean(data.spread);
-  document.getElementById('m-spread-avg').textContent = '均值: '+avgSp.toFixed(1);
-  document.getElementById('m-spread-avg').style.color = sp>avgSp?'var(--orange)':'var(--green)';
-
-  // Z-scores for signals
-  const spZ = (sp - avgSp)/std(data.spread);
-  const rtZ = (rt - mean(data.ratio))/std(data.ratio);
-  const lastCorr = data.corr[last] || 0;
-
-  const sigSp = document.getElementById('sig-spread');
-  if (spZ > 1.5) { sigSp.textContent='卖 DVOL / 买 VIX | Z='+spZ.toFixed(2); sigSp.className='signal short'; }
-  else if (spZ < -1.5) { sigSp.textContent='买 DVOL / 卖 VIX | Z='+spZ.toFixed(2); sigSp.className='signal long'; }
-  else { sigSp.textContent='中性 | Z='+spZ.toFixed(2); sigSp.className='signal neutral'; }
-
-  const sigRt = document.getElementById('sig-ratio');
-  if (rtZ > 1.5) { sigRt.textContent='做空比率 | Z='+rtZ.toFixed(2); sigRt.className='signal short'; }
-  else if (rtZ < -1.5) { sigRt.textContent='做多比率 | Z='+rtZ.toFixed(2); sigRt.className='signal long'; }
-  else { sigRt.textContent='中性 | Z='+rtZ.toFixed(2); sigRt.className='signal neutral'; }
-
-  const sigC = document.getElementById('sig-corr');
-  if (lastCorr < 0.3) { sigC.textContent='脱钩! 买入 Gamma | r='+lastCorr.toFixed(2); sigC.className='signal long'; }
-  else if (lastCorr > 0.7) { sigC.textContent='耦合 | 卖出波动率价差 | r='+lastCorr.toFixed(2); sigC.className='signal short'; }
-  else { sigC.textContent='适中 | r='+lastCorr.toFixed(2); sigC.className='signal neutral'; }
-
-  document.getElementById('m-ratio-sig').textContent = 'Z 分数: '+rtZ.toFixed(2);
-  document.getElementById('m-ratio-sig').style.color = Math.abs(rtZ)>1.5?'var(--red)':'var(--muted)';
+  const dEl=document.getElementById('m-dvol-chg');
+  dEl.textContent=(dChg>=0?'+':'')+dChg.toFixed(2)+' 今日'; dEl.style.color=dChg>=0?'var(--red)':'var(--green)';
+  const vEl=document.getElementById('m-vix-chg');
+  vEl.textContent=(vChg>=0?'+':'')+vChg.toFixed(2)+' 今日'; vEl.style.color=vChg>=0?'var(--red)':'var(--green)';
+  const avgSp=mean(data.spread);
+  document.getElementById('m-spread-avg').textContent='均值: '+avgSp.toFixed(1);
+  document.getElementById('m-spread-avg').style.color=sp>avgSp?'var(--orange)':'var(--green)';
+  const spZ=(sp-avgSp)/std(data.spread), rtZ=(rt-mean(data.ratio))/std(data.ratio), lastCorr=data.corr[last]||0;
+  const sigSp=document.getElementById('sig-spread');
+  if(spZ>1.5){sigSp.textContent='卖 DVOL / 买 VIX | Z='+spZ.toFixed(2);sigSp.className='signal short';}
+  else if(spZ<-1.5){sigSp.textContent='买 DVOL / 卖 VIX | Z='+spZ.toFixed(2);sigSp.className='signal long';}
+  else{sigSp.textContent='中性 | Z='+spZ.toFixed(2);sigSp.className='signal neutral';}
+  const sigRt=document.getElementById('sig-ratio');
+  if(rtZ>1.5){sigRt.textContent='做空比率 | Z='+rtZ.toFixed(2);sigRt.className='signal short';}
+  else if(rtZ<-1.5){sigRt.textContent='做多比率 | Z='+rtZ.toFixed(2);sigRt.className='signal long';}
+  else{sigRt.textContent='中性 | Z='+rtZ.toFixed(2);sigRt.className='signal neutral';}
+  const sigC=document.getElementById('sig-corr');
+  if(lastCorr<0.3){sigC.textContent='脱钩! 买入 Gamma | r='+lastCorr.toFixed(2);sigC.className='signal long';}
+  else if(lastCorr>0.7){sigC.textContent='耦合 | 卖出波动率价差 | r='+lastCorr.toFixed(2);sigC.className='signal short';}
+  else{sigC.textContent='适中 | r='+lastCorr.toFixed(2);sigC.className='signal neutral';}
+  document.getElementById('m-ratio-sig').textContent='Z 分数: '+rtZ.toFixed(2);
+  document.getElementById('m-ratio-sig').style.color=Math.abs(rtZ)>1.5?'var(--red)':'var(--muted)';
 }
 
-function destroyCharts() {
-  Object.values(chartInstances).forEach(c => c.destroy());
-  chartInstances = {};
-}
+function destroyCharts(){ Object.values(chartInstances).forEach(c=>c.destroy()); chartInstances={}; }
 
 function drawCharts(data) {
   destroyCharts();
-  const labels = data.dates;
-  const gridColor = 'rgba(48,54,61,0.6)';
-  const tickColor = '#8b949e';
+  const labels=data.dates;
 
-  // 1. 双 Y 轴走势图（VIX 左轴，DVOL 右轴）+ 事件标注
-  // 找出哪些关键事件在当前日期范围内
-  const eventAnnotations = {};
-  KEY_EVENTS.forEach((ev,idx)=>{
-    const evIdx = labels.indexOf(ev.d);
-    if (evIdx >= 0) {
-      eventAnnotations['ev'+idx] = {
-        type:'line', xMin:ev.d, xMax:ev.d,
-        borderColor:ev.color, borderWidth:1.5, borderDash:[4,4],
-        label:{
-          display:true, content:ev.label, position:'start',
-          color:ev.color, font:{size:10,weight:'bold'},
-          backgroundColor:'rgba(13,17,23,0.85)',
-          padding:4, rotation:-90, yAdjust:-20
-        }
-      };
-    }
+  // Event annotations
+  const ea={};
+  KEY_EVENTS.forEach((ev,i)=>{
+    if(labels.indexOf(ev.d)>=0) ea['ev'+i]={
+      type:'line',xMin:ev.d,xMax:ev.d,borderColor:ev.color,borderWidth:1.5,borderDash:[4,4],
+      label:{display:true,content:ev.label,position:'start',color:ev.color,font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3,rotation:-90,yAdjust:-15}
+    };
   });
-
-  // 显示比较面板
-  document.getElementById('compare-box').style.display = currentDays >= 365 ? 'block' : 'none';
 
   chartInstances.overlay = new Chart(document.getElementById('chartOverlay'),{
     type:'line',
-    data:{
-      labels,
-      datasets:[
-        {label:'DVOL (BTC波动率)',data:data.dvol,borderColor:'#d29922',backgroundColor:'rgba(210,153,34,.06)',fill:true,borderWidth:2,pointRadius:0,tension:.3,yAxisID:'yDvol'},
-        {label:'VIX (恐慌指数)',data:data.vix,borderColor:'#bc8cff',backgroundColor:'rgba(188,140,255,.06)',fill:true,borderWidth:2,pointRadius:0,tension:.3,yAxisID:'yVix'}
-      ]
-    },
-    options:{
-      responsive:true,
-      interaction:{mode:'index',intersect:false},
+    data:{labels,datasets:[
+      {label:'DVOL (BTC波动率)',data:data.dvol,borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.06)',fill:true,borderWidth:2,pointRadius:0,tension:.3,yAxisID:'yDvol'},
+      {label:'VIX (恐慌指数)',data:data.vix,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.06)',fill:true,borderWidth:2,pointRadius:0,tension:.3,yAxisID:'yVix'}
+    ]},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},
       scales:{
-        x:{grid:{color:gridColor},ticks:{color:tickColor,maxTicksLimit:16,font:{size:10}}},
-        yVix:{
-          position:'left',grid:{color:gridColor},
-          ticks:{color:'#bc8cff',font:{size:10}},
-          title:{display:true,text:'VIX',color:'#bc8cff'}
-        },
-        yDvol:{
-          position:'right',grid:{drawOnChartArea:false},
-          ticks:{color:'#d29922',font:{size:10}},
-          title:{display:true,text:'DVOL',color:'#d29922'}
-        }
+        x:{grid:{color:G},ticks:{color:T,maxTicksLimit:16,font:{size:10}}},
+        yVix:{position:'left',grid:{color:G},ticks:{color:'#7c3aed',font:{size:10}},title:{display:true,text:'VIX',color:'#7c3aed'}},
+        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309',font:{size:10}},title:{display:true,text:'DVOL',color:'#b45309'}}
       },
-      plugins:{
-        legend:{labels:{color:tickColor}},
-        annotation:{annotations:eventAnnotations}
-      }
+      plugins:{legend:{labels:{color:T}},annotation:{annotations:ea}}
     }
   });
 
-  // 2. Spread with Bollinger
-  const spMean = mean(data.spread), spStd = std(data.spread);
-  const upper = data.spread.map(()=>+(spMean+2*spStd).toFixed(2));
-  const lower = data.spread.map(()=>+(spMean-2*spStd).toFixed(2));
-  const meanLine = data.spread.map(()=>+spMean.toFixed(2));
-
+  const spMean=mean(data.spread),spStd=std(data.spread);
   chartInstances.spread = new Chart(document.getElementById('chartSpread'),{
     type:'line',
-    data:{
-      labels,
-      datasets:[
-        {label:'价差',data:data.spread,borderColor:'#58a6ff',borderWidth:2,pointRadius:0,tension:.3,fill:false},
-        {label:'均值',data:meanLine,borderColor:'rgba(255,255,255,.3)',borderWidth:1,borderDash:[5,5],pointRadius:0,fill:false},
-        {label:'+2\u03C3',data:upper,borderColor:'rgba(248,81,73,.4)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false},
-        {label:'-2\u03C3',data:lower,borderColor:'rgba(63,185,80,.4)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:'+1'}
-      ]
-    },
-    options:{
-      responsive:true,
-      interaction:{mode:'index',intersect:false},
-      scales:{
-        x:{grid:{color:gridColor},ticks:{color:tickColor,maxTicksLimit:8,font:{size:10}}},
-        y:{grid:{color:gridColor},ticks:{color:tickColor}}
-      },
-      plugins:{legend:{labels:{color:tickColor,font:{size:10}}}}
+    data:{labels,datasets:[
+      {label:'价差',data:data.spread,borderColor:'#2563eb',borderWidth:2,pointRadius:0,tension:.3,fill:false},
+      {label:'均值',data:data.spread.map(()=>+spMean.toFixed(2)),borderColor:'rgba(0,0,0,.15)',borderWidth:1,borderDash:[5,5],pointRadius:0,fill:false},
+      {label:'+2\u03C3',data:data.spread.map(()=>+(spMean+2*spStd).toFixed(2)),borderColor:'rgba(220,38,38,.3)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false},
+      {label:'-2\u03C3',data:data.spread.map(()=>+(spMean-2*spStd).toFixed(2)),borderColor:'rgba(22,163,74,.3)',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:'+1'}
+    ]},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},
+      scales:{x:{grid:{color:G},ticks:{color:T,maxTicksLimit:8,font:{size:10}}},y:{grid:{color:G},ticks:{color:T}}},
+      plugins:{legend:{labels:{color:T,font:{size:10}}}}
     }
   });
 
-  // 3. Ratio Z-score
-  const rtMean = mean(data.ratio), rtStd = std(data.ratio);
-  const ratioZ = data.ratio.map(v=>+((v-rtMean)/rtStd).toFixed(3));
-  const ratioColors = ratioZ.map(z => z>1.5?'rgba(248,81,73,.7)':z<-1.5?'rgba(63,185,80,.7)':'rgba(88,166,255,.5)');
-
+  const rtMean=mean(data.ratio),rtStd=std(data.ratio);
+  const ratioZ=data.ratio.map(v=>+((v-rtMean)/rtStd).toFixed(3));
   chartInstances.ratio = new Chart(document.getElementById('chartRatio'),{
     type:'bar',
-    data:{
-      labels,
-      datasets:[{label:'Z-Score',data:ratioZ,backgroundColor:ratioColors,borderWidth:0}]
-    },
-    options:{
-      responsive:true,
-      scales:{
-        x:{grid:{color:gridColor},ticks:{color:tickColor,maxTicksLimit:8,font:{size:10}}},
-        y:{grid:{color:gridColor},ticks:{color:tickColor},
-          title:{display:true,text:'Z-Score',color:tickColor}}
-      },
-      plugins:{
-        legend:{display:false},
-        annotation:{
-          annotations:{
-            upper:{type:'line',yMin:1.5,yMax:1.5,borderColor:'rgba(248,81,73,.5)',borderWidth:1,borderDash:[5,5],label:{display:true,content:'+1.5\u03C3',position:'start',color:tickColor,font:{size:10}}},
-            lower:{type:'line',yMin:-1.5,yMax:-1.5,borderColor:'rgba(63,185,80,.5)',borderWidth:1,borderDash:[5,5],label:{display:true,content:'-1.5\u03C3',position:'start',color:tickColor,font:{size:10}}}
-          }
-        }
-      }
+    data:{labels,datasets:[{label:'Z分数',data:ratioZ,backgroundColor:ratioZ.map(z=>z>1.5?'rgba(220,38,38,.6)':z<-1.5?'rgba(22,163,74,.6)':'rgba(37,99,235,.35)'),borderWidth:0}]},
+    options:{responsive:true,
+      scales:{x:{grid:{color:G},ticks:{color:T,maxTicksLimit:8,font:{size:10}}},y:{grid:{color:G},ticks:{color:T},title:{display:true,text:'Z分数',color:T}}},
+      plugins:{legend:{display:false},annotation:{annotations:{
+        upper:{type:'line',yMin:1.5,yMax:1.5,borderColor:'rgba(220,38,38,.4)',borderWidth:1,borderDash:[5,5],label:{display:true,content:'+1.5\u03C3',position:'start',color:T,font:{size:10}}},
+        lower:{type:'line',yMin:-1.5,yMax:-1.5,borderColor:'rgba(22,163,74,.4)',borderWidth:1,borderDash:[5,5],label:{display:true,content:'-1.5\u03C3',position:'start',color:T,font:{size:10}}}
+      }}}
     }
   });
 
-  // 4. Correlation
-  const corrColors = data.corr.map(c=>c===null?'transparent':c>0.7?'#3fb950':c<0.3?'#f85149':'#d29922');
   chartInstances.corr = new Chart(document.getElementById('chartCorr'),{
     type:'line',
-    data:{
-      labels,
-      datasets:[{
-        label:'30日相关性',
-        data:data.corr,
-        borderColor:'#58a6ff',
-        backgroundColor: (ctx)=>{
-          const v=ctx.raw; if(v===null)return 'transparent';
-          return v>0.7?'rgba(63,185,80,.15)':v<0.3?'rgba(248,81,73,.15)':'rgba(210,153,34,.1)';
-        },
-        fill:true,borderWidth:2,pointRadius:0,tension:.3,
-        segment:{borderColor:ctx=>{
-          const v=ctx.p1.parsed.y;
-          return v>0.7?'#3fb950':v<0.3?'#f85149':'#58a6ff';
-        }}
-      }]
-    },
-    options:{
-      responsive:true,
-      scales:{
-        x:{grid:{color:gridColor},ticks:{color:tickColor,maxTicksLimit:8,font:{size:10}}},
-        y:{grid:{color:gridColor},ticks:{color:tickColor},min:-0.5,max:1,
-          title:{display:true,text:'相关系数',color:tickColor}}
-      },
-      plugins:{
-        legend:{display:false},
-        annotation:{
-          annotations:{
-            high:{type:'line',yMin:0.7,yMax:0.7,borderColor:'rgba(63,185,80,.3)',borderWidth:1,borderDash:[5,5]},
-            low:{type:'line',yMin:0.3,yMax:0.3,borderColor:'rgba(248,81,73,.3)',borderWidth:1,borderDash:[5,5]}
-          }
-        }
-      }
+    data:{labels,datasets:[{label:'30日相关性',data:data.corr,borderColor:'#2563eb',fill:true,
+      backgroundColor:ctx=>{const v=ctx.raw;if(v===null)return'transparent';return v>0.7?'rgba(22,163,74,.1)':v<0.3?'rgba(220,38,38,.1)':'rgba(180,83,9,.06)';},
+      borderWidth:2,pointRadius:0,tension:.3,
+      segment:{borderColor:ctx=>{const v=ctx.p1.parsed.y;return v>0.7?'#16a34a':v<0.3?'#dc2626':'#2563eb';}}
+    }]},
+    options:{responsive:true,
+      scales:{x:{grid:{color:G},ticks:{color:T,maxTicksLimit:8,font:{size:10}}},y:{grid:{color:G},ticks:{color:T},min:-0.5,max:1,title:{display:true,text:'相关系数',color:T}}},
+      plugins:{legend:{display:false},annotation:{annotations:{
+        high:{type:'line',yMin:0.7,yMax:0.7,borderColor:'rgba(22,163,74,.25)',borderWidth:1,borderDash:[5,5]},
+        low:{type:'line',yMin:0.3,yMax:0.3,borderColor:'rgba(220,38,38,.25)',borderWidth:1,borderDash:[5,5]}
+      }}}
     }
   });
 
-  // 5. Spread distribution histogram
-  const bins = 20;
-  const minSp = Math.min(...data.spread), maxSp = Math.max(...data.spread);
-  const binW = (maxSp-minSp)/bins;
-  const histogram = Array(bins).fill(0);
-  const binLabels = [];
-  for(let i=0;i<bins;i++) binLabels.push((minSp+i*binW).toFixed(1));
-  data.spread.forEach(v=>{
-    const idx = Math.min(Math.floor((v-minSp)/binW), bins-1);
-    histogram[idx]++;
-  });
-  const histColors = binLabels.map(v=>{
-    const val = parseFloat(v);
-    if(val > spMean+2*spStd) return 'rgba(248,81,73,.6)';
-    if(val < spMean-2*spStd) return 'rgba(63,185,80,.6)';
-    return 'rgba(88,166,255,.4)';
-  });
-
+  const bins=20,minSp=Math.min(...data.spread),maxSp=Math.max(...data.spread),binW=(maxSp-minSp)/bins;
+  const hist=Array(bins).fill(0),bL=[];
+  for(let i=0;i<bins;i++) bL.push((minSp+i*binW).toFixed(1));
+  data.spread.forEach(v=>{const idx=Math.min(Math.floor((v-minSp)/binW),bins-1);hist[idx]++;});
   chartInstances.hist = new Chart(document.getElementById('chartHist'),{
     type:'bar',
-    data:{
-      labels:binLabels,
-      datasets:[{label:'频率',data:histogram,backgroundColor:histColors,borderWidth:0}]
-    },
-    options:{
-      responsive:true,
-      scales:{
-        x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10}},title:{display:true,text:'价差值',color:tickColor}},
-        y:{grid:{color:gridColor},ticks:{color:tickColor},title:{display:true,text:'计数',color:tickColor}}
-      },
+    data:{labels:bL,datasets:[{label:'频率',data:hist,backgroundColor:bL.map(v=>{const val=parseFloat(v);return val>spMean+2*spStd?'rgba(220,38,38,.5)':val<spMean-2*spStd?'rgba(22,163,74,.5)':'rgba(37,99,235,.3)';}),borderWidth:0}]},
+    options:{responsive:true,
+      scales:{x:{grid:{color:G},ticks:{color:T,font:{size:10}},title:{display:true,text:'价差值',color:T}},y:{grid:{color:G},ticks:{color:T},title:{display:true,text:'计数',color:T}}},
       plugins:{legend:{display:false}}
     }
   });
 }
 
-function setRange(days, btn) {
-  currentDays = days;
-  document.querySelectorAll('.controls button').forEach(b=>b.classList.remove('active'));
+function setRange(days,btn) {
+  currentDays=days;
+  document.querySelectorAll('.controls button:not(.compare-btn)').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   regenerate();
 }
+function regenerate(){ const data=generateData(currentDays); updateMetrics(data); drawCharts(data); }
 
-function regenerate() {
-  const data = generateData(currentDays);
-  updateMetrics(data);
-  drawCharts(data);
+// ========== 对比面板 ==========
+let zoomChartToday=null, zoomChartWar=null, compareVisible=false;
+
+function toggleCompare(btn) {
+  compareVisible = !compareVisible;
+  const sec = document.getElementById('compare-section');
+  if (compareVisible) {
+    sec.classList.add('visible');
+    btn.classList.add('active');
+    drawCompareCharts();
+    sec.scrollIntoView({behavior:'smooth',block:'start'});
+  } else {
+    sec.classList.remove('visible');
+    btn.classList.remove('active');
+  }
 }
 
-// ======== 放大图表数据 ========
+function drawCompareCharts() {
+  if(zoomChartWar) zoomChartWar.destroy();
+  if(zoomChartToday) zoomChartToday.destroy();
 
-// 今日日内（2026-03-09）逐小时数据
-const TODAY_INTRADAY = {
-  labels: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00',
-           '08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00',
-           '16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
-  vix:  [38.5,38.9,39.2,39.8,40.1,40.5,41.2,41.8,42.5,43.1,44.2,43.8,43.2,42.9,43.5,42.8,42.1,41.5,41.8,42.2,42.5,42.8,42.6,42.8],
-  dvol: [98, 99, 100,101,102,103,104,105,106,108,112,110,109,108,110,108,107,106,107,108,108,108,107,108]
-};
-
-// 2025年4月关税战逐日详细数据
-const TRADEWAR_DAILY = {
-  labels: ['4/1','4/2','4/3','4/4','4/7','4/8','4/9','4/10','4/11',
-           '4/14','4/15','4/16','4/17','4/18','4/21','4/22','4/23',
-           '4/24','4/25','4/28','4/29','4/30'],
-  vix:  [22.3,21.5,30.0,45.3,46.9,52.3,33.6,40.7,37.6,
-         30.1,29.5,28.2,32.6,31.5,34.1,33.8,30.2,
-         28.4,26.5,25.8,25.2,24.7],
-  dvol: [58, 60, 75, 95, 105,110,82, 90, 85,
-         72, 70, 68, 78, 75, 77, 75, 70,
-         65, 62, 60, 59, 58],
-  events: {
-    2:  '对等关税公布',
-    3:  '关税正式生效',
-    4:  '中国报复加征',
-    5:  'VIX 峰值 52.3',
-    6:  '90天暂缓宣布',
-    9:  '市场初步企稳'
-  }
-};
-
-let zoomChartToday = null;
-let zoomChartWar = null;
-
-function zoomToday(btn) {
-  const panel = document.getElementById('zoom-today-panel');
-  const warPanel = document.getElementById('zoom-tradewar-panel');
-  const isVisible = panel.style.display !== 'none';
-
-  // 关闭另一个
-  warPanel.style.display = 'none';
-  document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.remove('active'));
-
-  if (isVisible) {
-    panel.style.display = 'none';
-    return;
-  }
-
-  panel.style.display = 'block';
-  btn.classList.add('active');
-  panel.scrollIntoView({behavior:'smooth', block:'start'});
-
-  if (zoomChartToday) zoomChartToday.destroy();
-
-  const gridColor = 'rgba(48,54,61,0.6)';
-  const tickColor = '#8b949e';
-  const d = TODAY_INTRADAY;
-
-  zoomChartToday = new Chart(document.getElementById('chartZoomToday'),{
-    type:'line',
-    data:{
-      labels: d.labels,
-      datasets:[
-        {label:'DVOL',data:d.dvol,borderColor:'#d29922',backgroundColor:'rgba(210,153,34,.1)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#d29922',tension:.3,yAxisID:'yDvol'},
-        {label:'VIX (盘前/预估)',data:d.vix,borderColor:'#bc8cff',backgroundColor:'rgba(188,140,255,.1)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#bc8cff',tension:.3,yAxisID:'yVix'}
-      ]
-    },
-    options:{
-      responsive:true,
-      interaction:{mode:'index',intersect:false},
-      scales:{
-        x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:11}}},
-        yVix:{position:'left',grid:{color:gridColor},ticks:{color:'#bc8cff'},title:{display:true,text:'VIX',color:'#bc8cff'}},
-        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#d29922'},title:{display:true,text:'DVOL',color:'#d29922'}}
-      },
-      plugins:{
-        legend:{labels:{color:tickColor,font:{size:12}}},
-        annotation:{
-          annotations:{
-            now:{type:'line',xMin:'10:00',xMax:'10:00',borderColor:'var(--red)',borderWidth:2,borderDash:[6,3],
-              label:{display:true,content:'日内高点',position:'start',color:'#f85149',font:{size:11,weight:'bold'},backgroundColor:'rgba(13,17,23,0.9)',padding:4}
-            },
-            open:{type:'line',xMin:'09:00',xMax:'09:00',borderColor:'rgba(255,255,255,.3)',borderWidth:1,borderDash:[4,4],
-              label:{display:true,content:'美股盘前',position:'end',color:tickColor,font:{size:10},backgroundColor:'rgba(13,17,23,0.9)',padding:3}
-            }
-          }
-        }
-      }
-    }
-  });
-}
-
-function zoomTradeWar(btn) {
-  const panel = document.getElementById('zoom-tradewar-panel');
-  const todayPanel = document.getElementById('zoom-today-panel');
-  const isVisible = panel.style.display !== 'none';
-
-  todayPanel.style.display = 'none';
-  document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.remove('active'));
-
-  if (isVisible) {
-    panel.style.display = 'none';
-    return;
-  }
-
-  panel.style.display = 'block';
-  btn.classList.add('active');
-  panel.scrollIntoView({behavior:'smooth', block:'start'});
-
-  if (zoomChartWar) zoomChartWar.destroy();
-
-  const gridColor = 'rgba(48,54,61,0.6)';
-  const tickColor = '#8b949e';
-  const d = TRADEWAR_DAILY;
-
-  // 构建事件标注
-  const warAnnotations = {};
-  Object.entries(d.events).forEach(([idx, label])=>{
-    warAnnotations['we'+idx] = {
-      type:'line', xMin:d.labels[idx], xMax:d.labels[idx],
-      borderColor:'rgba(248,81,73,.6)', borderWidth:1.5, borderDash:[4,4],
-      label:{display:true, content:label, position:'start', color:'#f85149',
-        font:{size:10,weight:'bold'}, backgroundColor:'rgba(13,17,23,0.9)', padding:4,
-        rotation:-45, yAdjust:-10}
+  // 左：关税战
+  const wd = TRADEWAR_DAILY;
+  const wa = {};
+  Object.entries(wd.events).forEach(([idx,label])=>{
+    wa['we'+idx]={type:'line',xMin:wd.labels[idx],xMax:wd.labels[idx],
+      borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
+      label:{display:true,content:label,position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3,rotation:-45,yAdjust:-8}
     };
   });
-  // VIX=52 峰值水平线
-  warAnnotations['peakLine'] = {
-    type:'line', yMin:52.3, yMax:52.3, yScaleID:'yVix',
-    borderColor:'rgba(248,81,73,.4)', borderWidth:1, borderDash:[8,4],
-    label:{display:true, content:'VIX 峰值 52.3', position:'end', color:'#f85149',
-      font:{size:10}, backgroundColor:'rgba(13,17,23,0.8)', padding:3}
-  };
+  wa.peakLine={type:'line',yMin:52.3,yMax:52.3,yScaleID:'yVix',borderColor:'rgba(220,38,38,.3)',borderWidth:1,borderDash:[8,4],
+    label:{display:true,content:'VIX 峰值 52.3',position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}};
 
   zoomChartWar = new Chart(document.getElementById('chartZoomWar'),{
     type:'line',
-    data:{
-      labels: d.labels,
-      datasets:[
-        {label:'DVOL',data:d.dvol,borderColor:'#d29922',backgroundColor:'rgba(210,153,34,.1)',fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#d29922',tension:.3,yAxisID:'yDvol'},
-        {label:'VIX',data:d.vix,borderColor:'#bc8cff',backgroundColor:'rgba(188,140,255,.1)',fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#bc8cff',tension:.3,yAxisID:'yVix'}
-      ]
-    },
-    options:{
-      responsive:true,
-      interaction:{mode:'index',intersect:false},
+    data:{labels:wd.labels,datasets:[
+      {label:'DVOL',data:wd.dvol,borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.08)',fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#b45309',tension:.3,yAxisID:'yDvol'},
+      {label:'VIX',data:wd.vix,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.08)',fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#7c3aed',tension:.3,yAxisID:'yVix'}
+    ]},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},
       scales:{
-        x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:11,weight:'bold'}}},
-        yVix:{position:'left',grid:{color:gridColor},ticks:{color:'#bc8cff'},title:{display:true,text:'VIX',color:'#bc8cff'},min:15,max:60},
-        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#d29922'},title:{display:true,text:'DVOL',color:'#d29922'},min:40,max:120}
+        x:{grid:{color:G},ticks:{color:T,font:{size:10,weight:'bold'}}},
+        yVix:{position:'left',grid:{color:G},ticks:{color:'#7c3aed'},title:{display:true,text:'VIX',color:'#7c3aed'},min:15,max:60},
+        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309'},title:{display:true,text:'DVOL',color:'#b45309'},min:40,max:120}
       },
-      plugins:{
-        legend:{labels:{color:tickColor,font:{size:12}}},
-        annotation:{annotations:warAnnotations}
+      plugins:{legend:{labels:{color:T,font:{size:11}}},annotation:{annotations:wa}}
+    }
+  });
+
+  // 右：今日日内
+  const td = TODAY_INTRADAY;
+  zoomChartToday = new Chart(document.getElementById('chartZoomToday'),{
+    type:'line',
+    data:{labels:td.labels,datasets:[
+      {label:'DVOL',data:td.dvol,borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.08)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#b45309',tension:.3,yAxisID:'yDvol'},
+      {label:'VIX (盘前/预估)',data:td.vix,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.08)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#7c3aed',tension:.3,yAxisID:'yVix'}
+    ]},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{grid:{color:G},ticks:{color:T,font:{size:10}}},
+        yVix:{position:'left',grid:{color:G},ticks:{color:'#7c3aed'},title:{display:true,text:'VIX',color:'#7c3aed'}},
+        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309'},title:{display:true,text:'DVOL',color:'#b45309'}}
+      },
+      plugins:{legend:{labels:{color:T,font:{size:11}}},
+        annotation:{annotations:{
+          peak:{type:'line',xMin:'10:00',xMax:'10:00',borderColor:'#dc2626',borderWidth:1.5,borderDash:[6,3],
+            label:{display:true,content:'日内高点',position:'start',color:'#dc2626',font:{size:10,weight:'bold'},backgroundColor:LBG,padding:3}},
+          open:{type:'line',xMin:'09:00',xMax:'09:00',borderColor:'rgba(0,0,0,.15)',borderWidth:1,borderDash:[4,4],
+            label:{display:true,content:'美股盘前',position:'end',color:T,font:{size:9},backgroundColor:LBG,padding:3}},
+          vixRef:{type:'line',yMin:52.3,yMax:52.3,yScaleID:'yVix',borderColor:'rgba(220,38,38,.25)',borderWidth:1,borderDash:[8,4],
+            label:{display:true,content:'2025.4 VIX峰值 52.3',position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}}
+        }}
       }
     }
   });
