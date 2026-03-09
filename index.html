@@ -62,8 +62,12 @@
     box-shadow:0 1px 3px rgba(0,0,0,.04);
   }
   .metric-card .label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.8px; font-weight:600; }
-  .metric-card .value { font-size:26px; font-weight:800; margin-top:4px; }
+  .metric-card .value { font-size:26px; font-weight:800; margin-top:4px; transition:all .3s; }
   .metric-card .sub { font-size:12px; margin-top:3px; font-weight:500; }
+  @keyframes flashGreen { 0%{background:rgba(22,163,74,.25)} 100%{background:transparent} }
+  @keyframes flashRed { 0%{background:rgba(220,38,38,.2)} 100%{background:transparent} }
+  .flash-up { animation: flashGreen .8s ease-out; }
+  .flash-down { animation: flashRed .8s ease-out; }
 
   /* ===== 对比面板 ===== */
   .compare-section {
@@ -189,11 +193,11 @@
     <div class="compare-card right">
       <h3 style="color:var(--accent);">2026年3月9日 今日日内走势 (逐小时)</h3>
       <div class="zoom-stats">
-        <div class="zoom-stat"><div class="zs-label">VIX 盘前</div><div class="zs-val" style="color:var(--purple);">42.8</div></div>
-        <div class="zoom-stat"><div class="zs-label">VIX 日高</div><div class="zs-val" style="color:var(--red);">44.2</div></div>
-        <div class="zoom-stat"><div class="zs-label">距4月峰值</div><div class="zs-val" style="color:var(--orange);">-18%</div></div>
-        <div class="zoom-stat"><div class="zs-label">DVOL 当前</div><div class="zs-val" style="color:var(--orange);">108</div></div>
-        <div class="zoom-stat"><div class="zs-label">DVOL 日高</div><div class="zs-val" style="color:var(--red);">112</div></div>
+        <div class="zoom-stat"><div class="zs-label">VIX 当前</div><div class="zs-val" style="color:var(--purple);">31.9</div></div>
+        <div class="zoom-stat"><div class="zs-label">VIX 日高</div><div class="zs-val" style="color:var(--red);">33.5</div></div>
+        <div class="zoom-stat"><div class="zs-label">距4月峰值</div><div class="zs-val" style="color:var(--orange);">-39%</div></div>
+        <div class="zoom-stat"><div class="zs-label">DVOL 当前</div><div class="zs-val" style="color:var(--orange);">80</div></div>
+        <div class="zoom-stat"><div class="zs-label">DVOL 日高</div><div class="zs-val" style="color:var(--red);">83</div></div>
         <div class="zoom-stat"><div class="zs-label">趋势</div><div class="zs-val" style="color:var(--red);">连涨5日</div></div>
       </div>
       <canvas id="chartZoomToday" height="150"></canvas>
@@ -219,16 +223,16 @@
       </div>
       <div style="text-align:center;">
         <div style="font-size:11px;color:var(--accent);font-weight:600;">2026.3 当前</div>
-        <div style="font-size:12px;margin-top:6px;font-weight:800;color:var(--orange);">42.8 (进行中)</div>
-        <div style="font-size:12px;margin-top:4px;font-weight:800;color:var(--orange);">108 (进行中)</div>
-        <div style="font-size:12px;margin-top:4px;">65.2</div>
+        <div style="font-size:12px;margin-top:6px;font-weight:800;color:var(--orange);">31.9 (进行中)</div>
+        <div style="font-size:12px;margin-top:4px;font-weight:800;color:var(--orange);">80 (进行中)</div>
+        <div style="font-size:12px;margin-top:4px;">48.1</div>
         <div style="font-size:12px;margin-top:4px;">第5天 (攀升中)</div>
       </div>
       <div style="text-align:center;">
         <div style="font-size:11px;color:var(--muted);font-weight:600;">判断</div>
-        <div style="font-size:12px;margin-top:6px;color:var(--orange);font-weight:600;">接近但未达峰值</div>
-        <div style="font-size:12px;margin-top:4px;color:var(--red);font-weight:600;">已接近历史高位</div>
-        <div style="font-size:12px;margin-top:4px;color:var(--red);font-weight:600;">价差已超上次</div>
+        <div style="font-size:12px;margin-top:6px;color:var(--orange);font-weight:600;">约为峰值的61%</div>
+        <div style="font-size:12px;margin-top:4px;color:var(--orange);font-weight:600;">约为峰值的73%</div>
+        <div style="font-size:12px;margin-top:4px;color:var(--orange);font-weight:600;">价差偏低于上次</div>
         <div style="font-size:12px;margin-top:4px;color:var(--orange);font-weight:600;">关注何时见顶</div>
       </div>
     </div>
@@ -392,8 +396,8 @@ const VIX_HISTORY = [
   {d:'2025-12-12',vix:18.6},{d:'2025-12-19',vix:24.1},{d:'2025-12-31',vix:17.5},
   {d:'2026-01-09',vix:18.9},{d:'2026-01-17',vix:16.2},{d:'2026-01-30',vix:17.8},
   {d:'2026-02-06',vix:19.5},{d:'2026-02-14',vix:16.7},{d:'2026-02-27',vix:22.4},
-  {d:'2026-03-02',vix:26.8},{d:'2026-03-04',vix:29.5},{d:'2026-03-05',vix:34.2},
-  {d:'2026-03-06',vix:38.1},{d:'2026-03-07',vix:40.5},{d:'2026-03-09',vix:42.8}
+  {d:'2026-03-02',vix:22.8},{d:'2026-03-04',vix:24.5},{d:'2026-03-05',vix:27.0},
+  {d:'2026-03-06',vix:29.3},{d:'2026-03-07',vix:30.8},{d:'2026-03-09',vix:31.9}
 ];
 
 const DVOL_HISTORY = [
@@ -428,8 +432,8 @@ const DVOL_HISTORY = [
   {d:'2025-12-12',dvol:52},{d:'2025-12-19',dvol:62},{d:'2025-12-31',dvol:50},
   {d:'2026-01-09',dvol:54},{d:'2026-01-17',dvol:48},{d:'2026-01-30',dvol:52},
   {d:'2026-02-06',dvol:56},{d:'2026-02-14',dvol:50},{d:'2026-02-27',dvol:62},
-  {d:'2026-03-02',dvol:72},{d:'2026-03-04',dvol:78},{d:'2026-03-05',dvol:88},
-  {d:'2026-03-06',dvol:95},{d:'2026-03-07',dvol:102},{d:'2026-03-09',dvol:108}
+  {d:'2026-03-02',dvol:62},{d:'2026-03-04',dvol:66},{d:'2026-03-05',dvol:70},
+  {d:'2026-03-06',dvol:74},{d:'2026-03-07',dvol:78},{d:'2026-03-09',dvol:80}
 ];
 
 const KEY_EVENTS = [
@@ -441,7 +445,7 @@ const KEY_EVENTS = [
   {d:'2025-04-08', label:'贸易战升级 VIX>52', color:'#dc2626'},
   {d:'2025-04-09', label:'90天关税暂缓', color:'#16a34a'},
   {d:'2026-03-06', label:'新关税政策冲击', color:'#dc2626'},
-  {d:'2026-03-09', label:'今天 (盘前)', color:'#2563eb'}
+  {d:'2026-03-09', label:'今天 VIX 31.9', color:'#2563eb'}
 ];
 
 // ========== 对比面板数据 ==========
@@ -449,8 +453,8 @@ const TODAY_INTRADAY = {
   labels: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00',
            '08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00',
            '16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
-  vix:  [38.5,38.9,39.2,39.8,40.1,40.5,41.2,41.8,42.5,43.1,44.2,43.8,43.2,42.9,43.5,42.8,42.1,41.5,41.8,42.2,42.5,42.8,42.6,42.8],
-  dvol: [98,99,100,101,102,103,104,105,106,108,112,110,109,108,110,108,107,106,107,108,108,108,107,108]
+  vix:  [28.5,28.8,29.0,29.3,29.6,30.0,30.4,30.8,31.2,31.8,33.5,33.0,32.5,32.1,32.4,31.9,31.5,31.0,31.2,31.5,31.7,31.9,31.8,31.9],
+  dvol: [72,73,73,74,74,75,76,77,78,79,83,82,81,80,81,80,79,78,79,80,80,80,79,80]
 };
 
 const TRADEWAR_DAILY = {
@@ -512,6 +516,17 @@ function generateData(days) {
   return data;
 }
 
+function flash(id, newVal, chg) {
+  const el = document.getElementById(id);
+  const oldVal = el.textContent;
+  el.textContent = newVal;
+  if (oldVal !== '--' && oldVal !== newVal) {
+    el.classList.remove('flash-up','flash-down');
+    void el.offsetWidth; // 强制 reflow 重置动画
+    el.classList.add(chg >= 0 ? 'flash-up' : 'flash-down');
+  }
+}
+
 function mean(a){ return a.reduce((s,v)=>s+v,0)/a.length; }
 function std(a){ const m=mean(a); return Math.sqrt(a.reduce((s,v)=>s+(v-m)**2,0)/a.length); }
 
@@ -523,10 +538,10 @@ function updateMetrics(data) {
   const last = data.dvol.length-1;
   const dv=data.dvol[last], vx=data.vix[last], sp=data.spread[last], rt=data.ratio[last];
   const dChg=dv-data.dvol[last-1], vChg=vx-data.vix[last-1];
-  document.getElementById('m-dvol').textContent = dv.toFixed(1);
-  document.getElementById('m-vix').textContent = vx.toFixed(1);
-  document.getElementById('m-spread').textContent = sp.toFixed(1);
-  document.getElementById('m-ratio').textContent = rt.toFixed(2);
+  flash('m-dvol', dv.toFixed(1), dChg);
+  flash('m-vix', vx.toFixed(1), vChg);
+  flash('m-spread', sp.toFixed(1), sp - mean(data.spread));
+  flash('m-ratio', rt.toFixed(2), 0);
   const dEl=document.getElementById('m-dvol-chg');
   dEl.textContent=(dChg>=0?'+':'')+dChg.toFixed(2)+' 今日'; dEl.style.color=dChg>=0?'var(--red)':'var(--green)';
   const vEl=document.getElementById('m-vix-chg');
