@@ -315,7 +315,7 @@
 <div class="sync-bar">
   <div class="sync-item"><span class="sync-dot live" id="syncDotDvol"></span> DVOL: <span id="syncTimeDvol">--</span></div>
   <div class="sync-item"><span class="sync-dot live" id="syncDotBtc"></span> BTC: <span id="syncTimeBtc">--</span></div>
-  <div class="sync-item"><span class="sync-dot manual" id="syncDotVix"></span> VIX: <span id="syncTimeVix">手动更新</span></div>
+  <div class="sync-item"><span class="sync-dot manual" id="syncDotVix"></span> VIX: <span id="syncTimeVix">--</span></div>
   <div class="sync-item" id="syncStatus"></div>
 </div>
 
@@ -402,8 +402,8 @@
     <h4 style="color:var(--accent);font-size:15px;">当前情景推演 <span class="confidence-tag developing">developing</span></h4>
     <div id="currentPlaybook">
       <p style="margin-bottom:10px;">
-        <b>情景判断：</b><span style="color:var(--red);font-weight:800;">中东冲突升级情景 — 冲击扩散期（第 10 天）</span><br>
-        <span style="font-size:11px;color:var(--muted);">参照关税战：第 6 天见 VIX 峰值 52.3，当前 31.9 → 尚未到达历史级别恐慌</span>
+        <b>情景判断：</b><span style="color:var(--red);font-weight:800;">中东冲突升级情景 — 冲击扩散期</span> <span id="playbook-daycount" style="font-size:12px;color:var(--muted);">(Day N as of --)</span><br>
+        <span style="font-size:11px;color:var(--muted);">参照关税战：Day 5 见 VIX 峰值 52.3（4/3→4/8），当前 VIX 31.9 → 尚未到达历史级别恐慌</span>
       </p>
       <p style="margin-bottom:8px;">
         <b>当前指标读数：</b><br>
@@ -417,9 +417,10 @@
       </p>
       <p style="margin-bottom:8px;">
         <b>情景 B — 外交降温/停火：</b><br>
-        · VIX 连续 2 天下跌且 < 28 → 可考虑做多 BTC + 卖出 DVOL 跨式<br>
-        · DVOL/VIX 比率回落至 2.0 以下 → 价差收敛交易模板<br>
-        · 油价从 $110 回落至 $95 以下 → 恐慌情绪转折信号
+        · VIX official close 连续 2 天下跌且 < 28 → 可考虑做多 BTC + 卖出 DVOL 跨式<br>
+        · DVOL/VIX 比率（基于双方 daily close）回落至 2.0 以下 → 价差收敛交易模板<br>
+        · 油价从 $110 回落至 $95 以下 → 恐慌情绪转折信号<br>
+        <span style="font-size:10px;color:var(--muted);">Trigger basis: Cboe VIX official close (ET) + Deribit DVOL daily close (UTC)。盘中现值不视为触发。</span>
       </p>
       <p style="font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;margin-top:8px;">
         信息来源：Deribit API (DVOL) / CoinGecko (BTC) / VIX 手动更新 | 更新时间: <span id="playbook-time">--</span> | 以上为情景分析，非投资建议
@@ -438,6 +439,7 @@
       <p>
         DVOL-VIX 价差围绕均值波动。偏离 >2σ 时存在回归机会。<br><br>
         <b>触发：</b>价差 Z-Score > 2.0 或 < -2.0<br>
+        <b>Trigger basis：</b>Cboe VIX official close + Deribit DVOL daily close (UTC)<br>
         <b>交易模板：</b>价差过大 → 卖 BTC straddle + 买 SPX straddle（按 30D vega 对齐 notional）；过小 → 反向<br>
         <b>Delta 管理：</b>需日频 delta hedge<br>
         <b>期限匹配：</b>双边均选 30D 到期
@@ -450,6 +452,7 @@
       <p>
         DVOL/VIX 比率反映加密 vs 传统市场相对恐慌。极端时存在回归。<br><br>
         <b>触发：</b>比率 > 历史 90 分位 或 < 10 分位<br>
+        <b>Trigger basis：</b>Cboe VIX official close + Deribit DVOL daily close (UTC)<br>
         <b>交易模板：</b>比率过高 → 卖 BTC ATM straddle + 买 SPX ATM straddle<br>
         <b>Notional 对齐：</b>按 vega dollar 或 expected move % 匹配<br>
         <b>止损：</b>比率继续扩大 1σ 平仓
@@ -478,7 +481,7 @@
 
   <!-- 叠加对比图 -->
   <div class="chart-box full" style="margin-bottom:16px;">
-    <h3 style="font-size:14px;font-weight:700;color:var(--red);">四次危机 VIX 走势叠加对比（以事发日为 Day 0 对齐）</h3>
+    <h3 style="font-size:14px;font-weight:700;color:var(--red);">四次危机 VIX 走势叠加对比（Day 0 = event_date 00:00 UTC）</h3>
     <canvas id="chartCrisisVix"></canvas>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
@@ -499,8 +502,9 @@
       <canvas id="chartCrisis2024" height="100" style="margin-bottom:10px;"></canvas>
       <p style="color:var(--muted);font-size:12px;line-height:1.8;">
         <b>事件背景：</b>日央行意外加息 → 日元套利交易平仓 → 全球风险资产暴跌<br>
+        <b>Day 0 定义：</b>8/5（恐慌顶点日）00:00 UTC<br>
         <b>当时可见信息：</b>BOJ 利率决议公布后日元急升，全球 carry trade 被迫平仓<br>
-        <b>指标读数：</b>VIX 15→38.6（+157%）| DVOL 50→90（+80%）| BTC $64.5k→$49.5k（-23%）<br><br>
+        <b>指标读数：</b>VIX 15→38.6（+157%，Day 0 即 8/5 见顶，Reuters 记载收于 38.57）| DVOL 50→90（+80%）| BTC $64.5k→$49.5k（-23%）<br><br>
         <b>两种备选路径：</b><br>
         · 路径 A（实际发生）：纯流动性冲击，3 天内消退 → VIX 迅速回落至 20，DVOL 回落至 60<br>
         · 路径 B（未发生）：BOJ 持续紧缩引发全球衰退 → VIX 维持高位数周<br>
@@ -517,14 +521,15 @@
       <canvas id="chartCrisis2025" height="100" style="margin-bottom:10px;"></canvas>
       <p style="color:var(--muted);font-size:12px;line-height:1.8;">
         <b>事件背景：</b>对等关税 4/4 生效 → 中国报复 → 贸易战全面升级 → 4/9 宣布 90 天暂缓<br>
+        <b>Day 0 定义：</b>4/3（关税公布日）00:00 UTC<br>
         <b>当时可见信息：</b>关税政策已公布，市场讨论暂缓可能性<br>
-        <b>指标读数：</b>VIX 21.5→52.3（+143%）| DVOL 49.5→56.3（+14%，远低于VIX）| BTC $85k→$76.3k（-10%）<br><br>
-        <b>关键发现：</b>VIX 涨幅远大于 DVOL → 这是传统市场主导的宏观冲击，加密市场相对钝化<br>
+        <b>指标读数：</b>VIX 21.5→52.3（+143%，Day 5 即 4/8 见顶）| DVOL 49.5→56.3（+14%，远低于VIX）| BTC $85k→$76.3k（-10%）<br><br>
+        <b>关键发现：</b>VIX 涨幅远大于 DVOL → 传统市场主导的宏观冲击，加密市场相对钝化<br>
         <b>两种备选路径：</b><br>
-        · 路径 A（实际发生）：政策有明确拐点（暂缓公告），VIX 迅速回落<br>
+        · 路径 A（实际发生）：政策有明确拐点（暂缓公告 Day 6），VIX 迅速回落<br>
         · 路径 B（未发生）：贸易战全面升级，VIX 维持 40+ 数月<br>
-        <b>最终结果：</b>路径 A，4/9 暂缓后 VIX 3 周回到 25，BTC 暴涨至 $94k（+24%）<br>
-        <b>复盘结论：</b>政策驱动型冲击有明确拐点可追踪。VIX 做空时机可锚定政策事件。VIX-DVOL 分化（VIX涨143% vs DVOL涨14%）说明 BTC 对宏观关税并不敏感
+        <b>最终结果：</b>路径 A，4/9 暂缓后 VIX ~3 周回到 25，BTC 暴涨至 $94k（+24%）<br>
+        <b>复盘结论：</b>政策驱动型冲击有明确拐点可追踪。VIX-DVOL 分化（VIX +143% vs DVOL +14%）说明 BTC 对宏观关税并不敏感
       </p>
     </div>
   </details>
@@ -536,6 +541,7 @@
       <canvas id="chartCrisis2026feb" height="100" style="margin-bottom:10px;"></canvas>
       <p style="color:var(--muted);font-size:12px;line-height:1.8;">
         <b>事件背景：</b>BTC 从 1/17 的 $95.5k 持续下跌，2/5 触发大规模清算踩踏 → 单日暴跌 14%<br>
+        <b>Day 0 定义：</b>2/5（闪崩日）00:00 UTC<br>
         <b>当时可见信息：</b>Deribit 清算量飙升，链上杠杆指标恶化，VIX 维持低位（美股无感）<br>
         <b>指标读数：</b>VIX 仅 17.8（美股无感）| DVOL 40.5→90.3 日内高（+123%!），收盘 82.6 | BTC $84.6k→$62.9k（-26%）<br><br>
         <b>关键发现：</b>VIX 不动 + DVOL 飙升 = 纯加密内部事件（与 2025.4 关税战完全相反的 VIX-DVOL 分化方向）<br>
@@ -554,14 +560,15 @@
     <div class="detail-body">
       <canvas id="chartCrisis2026" height="100" style="margin-bottom:10px;"></canvas>
       <p style="color:var(--muted);font-size:12px;line-height:1.8;">
-        <b>事件背景：</b>2/28 哈梅内伊遇袭身亡 → 油价飙升突破 $110 → 伊朗报复威胁 → 全球避险<br>
-        <b>当前可见信息：</b>地缘局势仍在演变，油价高位震荡，外交斡旋中<br>
+        <b>事件背景：</b>2/28 哈梅内伊遇袭身亡（Reuters 报道）→ 油价飙升突破 $110 → 伊朗报复威胁 → 全球避险<br>
+        <b>Day 0 定义：</b>2/28 00:00 UTC<br>
+        <b>当前可见信息：</b>地缘局势仍在演变，油价高位震荡（盘中逼近 $120），3/8 Mojtaba Khamenei 被推为继任者（Reuters）<br>
         <b>指标读数：</b>VIX 22.4→<b style="color:var(--red);" id="crisis-vix">31.9</b>（+42%）| DVOL 52.5→<b style="color:var(--red);" id="crisis-dvol">59.9</b>（+14%，温和）| BTC $67.5k→<b id="crisis-btc">$67.9k</b>（震荡）<br><br>
         <b>与前三次对比：</b><br>
         · 与 2/5 闪崩完全相反：这次 VIX 大涨但 DVOL 只涨 14%（宏观主导，非加密内部）<br>
         · 与关税战类似：VIX 涨幅远大于 DVOL，但缺少明确的"暂缓"拐点<br>
         · BTC 已在 $62k-$73k 筑底（2/5 闪崩后），对地缘冲击敏感度降低<br><br>
-        <span style="font-size:10px;color:var(--muted);">信息来源: 公开新闻 / Deribit API / CoinGecko | 置信度: developing — 事件仍在演变</span>
+        <span style="font-size:10px;color:var(--muted);">信息来源: Reuters (事件) / Deribit API (DVOL) / CoinGecko (BTC) / Cboe (VIX, delayed) | 置信度: developing — 事件仍在演变</span>
       </p>
       <div class="signal neutral">进行中 — VIX 持续攀升但 DVOL 温和，关注 VIX 是否带动 DVOL 补涨</div>
     </div>
@@ -579,12 +586,12 @@
       <h3 class="dvol-color">DVOL - Deribit 波动率指数</h3>
       <ul>
         <li><b>定义：</b>衡量未来 <b>30 天</b> BTC 价格的年化隐含波动率，单位为百分比（如 DVOL=80 意味着市场预期 BTC 未来 30 天的年化波动率为 80%）</li>
-        <li><b>计算方法：</b>采集 Deribit 交易所上所有活跃 BTC 期权合约的买卖报价，选取到期日在 7-60 天之间的合约，对不同行权价的隐含波动率进行方差互换（Variance Swap）加权，再插值到恰好 30 天到期，最终取平方根得到波动率指数</li>
+        <li><b>计算方法：</b>DVOL 并非对 7-60 天所有到期合约统一加权。官方方法是：选取 30 天两侧最近的两个 expiry，过滤 ITM 和极远 OTM 后，分别按 variance swap 逻辑计算近端和远端期限的 variance，再在两者之间插值到 30 天并做平滑处理</li>
         <li><b>核心逻辑：</b>与 VIX 类似，本质是从虚值看涨 + 虚值看跌期权价格中"反推"出市场对未来波动的定价。期权越贵 → 隐含波动率越高 → DVOL 越高</li>
         <li><b>数据来源：</b>Deribit 期权订单簿实时计算，每秒更新，24/7 不间断（加密市场无休市）</li>
         <li><b>典型区间：</b>通常在 40-120 之间波动，远高于传统市场。平静期约 40-55，中等波动 55-80，恐慌期可突破 100+</li>
         <li><b>与实际波动率的关系：</b>DVOL 是"预期"波动率，通常高于实际已实现波动率（RV），两者之差即波动率风险溢价（VRP），长期为正</li>
-        <li><b>交易方式：</b>可通过 Deribit 的 BTC 期权/期货直接交易波动率，也可用跨式 (Straddle) 或宽跨式 (Strangle) 组合间接对冲</li>
+        <li><b>交易方式：</b>DVOL futures 提供更直接的 implied volatility 暴露；BTC 期权可间接交易波动率，但同时带有 Delta、Theta 等 Greeks 暴露。也可用跨式 (Straddle) 或宽跨式 (Strangle) 组合表达波动率观点</li>
       </ul>
     </div>
     <div class="info-card vix-card">
@@ -595,7 +602,7 @@
         <li>基于 SPX 期权链计算，方法成熟透明</li>
         <li>通常在 12-35 之间波动，极端恐慌时可超 80</li>
         <li>受美股情绪、美联储政策、地缘政治事件驱动</li>
-        <li>可通过 VIX 期货、期权、ETN (UVXY/SVXY) 交易</li>
+        <li>可通过 VIX 期货、期权，以及相关 ETF/ETP（如 UVXY、SVXY）表达波动率观点</li>
       </ul>
     </div>
   </div>
@@ -607,7 +614,7 @@
     <ul style="list-style:decimal; padding-left:24px;">
       <li style="padding-left:8px;"><b>共同宏观因子驱动：</b>两者都受全球风险偏好影响。宏观事件同时推高两者，使长期存在均衡关系。但这种均衡并非无风险套利，两者在危机中的反应幅度和速度不同。</li>
       <li style="padding-left:8px;"><b>BTC 的双重属性：</b>BTC 在避险时可能脱钩传统市场（2/5 闪崩 VIX 无感），但宏观冲击时又高度相关（关税战）。这种状态切换本身是模型风险的来源。</li>
-      <li style="padding-left:8px;"><b>市场微结构差异：</b>加密市场 24/7 交易、杠杆率更高、流动性更碎片化，使 DVOL 对事件反应速度和幅度与 VIX 不同，形成领先/滞后关系。</li>
+      <li style="padding-left:8px;"><b>市场微结构差异：</b>加密市场 24/7 交易、杠杆率更高、流动性更碎片化。谁先反应取决于事件发生的时间和性质：周末/亚洲时段事件中 Deribit 往往更早定价；美股正式时段内 VIX/SPX 波动率可能更快完成定价。不存在固定的"谁更快"规律。</li>
       <li style="padding-left:8px;"><b>波动率风险溢价差异：</b>BTC 期权 VRP（IV-RV）通常大于 SPX。差值具有均值回归特性，但半衰期和可靠性受样本限制。</li>
       <li style="padding-left:8px;"><b>跨资产情绪传染：</b>传统市场恐慌常以 1-3 天延迟传导至加密市场（反之亦然），为跨市场交易提供时间窗口。但传导时间不稳定。</li>
     </ul>
@@ -621,18 +628,20 @@
   <div class="info-card" style="border-color:var(--muted);">
     <h3 style="color:var(--muted);">数据来源与局限性</h3>
     <ul>
-      <li><b>DVOL:</b> Deribit API 实时拉取，24/7 更新，每 60 秒刷新。历史数据受 API 540 天限制，2024 年前为估算值</li>
-      <li><b>BTC:</b> CoinGecko API 拉取，每 60 秒刷新。历史数据受免费 API 365 天限制</li>
-      <li><b>VIX:</b> 手动更新，非实时。VIX 仅在美股交易时段有报价（周一至周五），与 24/7 的 DVOL 存在时间错配</li>
-      <li><b>时间同步问题：</b>DVOL 是 24/7 的，VIX 是 5×7h 的。任何基于两者的"当前信号"都可能建立在不同步数据上。页面顶部显示各数据源更新时间，请自行判断是否同一时点</li>
+      <li><b>DVOL:</b> Deribit <code>public/get_volatility_index_data</code> API，24/7，每 60 秒刷新。返回 candle timestamp，页面显示 source time (UTC)。历史受 API 540 天限制，2024 年前为估算值</li>
+      <li><b>BTC:</b> CoinGecko API（近 365 天）+ Binance <code>klines</code> API（2024 年），每 60 秒刷新实时价。页面显示 fetch timestamp</li>
+      <li><b>VIX:</b> 硬编码更新，非实时。Cboe 官方 VIX 现货数据本身也标注 "delayed at least 20 minutes"。VIX 仅在美股交易时段有报价（ET 时间），与 24/7 的 DVOL 存在结构性时间错配</li>
+      <li><b>时间同步：</b>DVOL 是 24/7 的，VIX 是 5×6.5h (ET) 的。当 VIX 数据陈旧（>24h），页面自动将价差/比率/信号卡片标记为 stale 并暂停信号输出。请关注顶部各数据源的 source timestamp</li>
+      <li><b>时区规范：</b>所有"Day N"均以 event_date 00:00 UTC 为 Day 0，day_number = floor((now_UTC - event_date_UTC) / 86400)。VIX 展示值为 ET 时区收盘，BTC/DVOL 为 UTC</li>
       <li><b>样本量：</b>DVOL 自 2021 年上线，可用历史约 4-5 年，统计检验力有限</li>
+      <li><b>触发条件基准：</b>所有涉及 VIX 阈值的条件（如 VIX>35），触发基准为 Cboe 当日 official close（非盘中现值/非开盘价）。在收盘确认前，条件标记为 pending</li>
     </ul>
   </div>
 </div>
 </div><!-- /tab-info -->
 
 <div class="footer">
-  BTC/DVOL 数据自动刷新 (CoinGecko + Deribit API) | VIX 手动更新（存在时间错配） | 相对价值研究，非无风险套利 | 不构成投资建议
+  BTC: CoinGecko + Binance | DVOL: Deribit API | VIX: 硬编码 (Cboe official close, delayed ≥20min) | 三者存在结构性时间错配 | 相对价值研究，非无风险套利 | 不构成投资建议
 </div>
 
 <script>
@@ -970,17 +979,26 @@ function updateMetrics(data) {
   document.getElementById('m-spread-avg').textContent='均值: '+avgSp.toFixed(1);
   document.getElementById('m-spread-avg').style.color=sp>avgSp?'var(--orange)':'var(--green)';
   const spZ=(sp-avgSp)/std(data.spread), rtZ=(rt-mean(data.ratio))/std(data.ratio), lastCorr=data.corr[last]||0;
+
+  // 检测 VIX 是否陈旧（>24h）
+  const lastVixEntry = VIX_HISTORY[VIX_HISTORY.length-1];
+  const vixStale = lastVixEntry ? ((Date.now() - new Date(lastVixEntry.d+'T16:00:00-05:00')) / 3600000 > 24) : true;
+  const stalePrefix = vixStale ? '[VIX stale] ' : '';
+  const staleClass = vixStale ? 'neutral' : '';
+
   const sigSp=document.getElementById('sig-spread');
-  if(spZ>1.5){sigSp.textContent='卖 DVOL / 买 VIX | Z='+spZ.toFixed(2);sigSp.className='signal short';}
+  if(vixStale){sigSp.textContent='信号暂停 (VIX 数据陈旧) | Z='+spZ.toFixed(2);sigSp.className='signal neutral';}
+  else if(spZ>1.5){sigSp.textContent='卖 DVOL / 买 VIX | Z='+spZ.toFixed(2);sigSp.className='signal short';}
   else if(spZ<-1.5){sigSp.textContent='买 DVOL / 卖 VIX | Z='+spZ.toFixed(2);sigSp.className='signal long';}
   else{sigSp.textContent='中性 | Z='+spZ.toFixed(2);sigSp.className='signal neutral';}
   const sigRt=document.getElementById('sig-ratio');
-  if(rtZ>1.5){sigRt.textContent='做空比率 | Z='+rtZ.toFixed(2);sigRt.className='signal short';}
+  if(vixStale){sigRt.textContent='信号暂停 (VIX 数据陈旧) | Z='+rtZ.toFixed(2);sigRt.className='signal neutral';}
+  else if(rtZ>1.5){sigRt.textContent='做空比率 | Z='+rtZ.toFixed(2);sigRt.className='signal short';}
   else if(rtZ<-1.5){sigRt.textContent='做多比率 | Z='+rtZ.toFixed(2);sigRt.className='signal long';}
   else{sigRt.textContent='中性 | Z='+rtZ.toFixed(2);sigRt.className='signal neutral';}
   const sigC=document.getElementById('sig-corr');
-  if(lastCorr<0.3){sigC.textContent='脱钩! 买入 Gamma | r='+lastCorr.toFixed(2);sigC.className='signal long';}
-  else if(lastCorr>0.7){sigC.textContent='耦合 | 卖出波动率价差 | r='+lastCorr.toFixed(2);sigC.className='signal short';}
+  if(lastCorr<0.3){sigC.textContent=(vixStale?stalePrefix:'')+'脱钩 | r='+lastCorr.toFixed(2);sigC.className='signal '+(vixStale?'neutral':'long');}
+  else if(lastCorr>0.7){sigC.textContent=(vixStale?stalePrefix:'')+'耦合 | r='+lastCorr.toFixed(2);sigC.className='signal '+(vixStale?'neutral':'short');}
   else{sigC.textContent='适中 | r='+lastCorr.toFixed(2);sigC.className='signal neutral';}
   document.getElementById('m-ratio-sig').textContent='Z 分数: '+rtZ.toFixed(2);
   document.getElementById('m-ratio-sig').style.color=Math.abs(rtZ)>1.5?'var(--red)':'var(--muted)';
@@ -1065,17 +1083,20 @@ function updateMetrics(data) {
     }
   }
 
-  // 更新推演面板信号
+  // 更新推演面板信号（基于 Cboe official close，非盘中值）
   const sigPb = document.getElementById('sig-playbook');
   if(sigPb) {
-    if(vx < 28 && rt < 2.0) {
-      sigPb.textContent = '条件 B 满足: VIX<28 + 比率<2.0';
+    if(vixStale) {
+      sigPb.textContent = '信号暂停 — VIX 数据陈旧 (>' + (lastVixEntry?lastVixEntry.d:'?') + ')，请更新后查看';
+      sigPb.className = 'signal neutral';
+    } else if(vx < 28 && rt < 2.0) {
+      sigPb.textContent = '条件 B 满足: VIX close<28 + 比率<2.0 (basis: official close)';
       sigPb.className = 'signal long';
     } else if(vx > 40) {
-      sigPb.textContent = '极端恐慌 VIX>40 — 历史上此区间持续时间有限';
+      sigPb.textContent = 'VIX close>40 — 历史上此区间持续时间有限 (basis: official close)';
       sigPb.className = 'signal short';
     } else if(vx > 35) {
-      sigPb.textContent = 'VIX 进入高位区间 (>35) — 参考历史回落模式';
+      sigPb.textContent = 'VIX close>35 — pending 收盘确认 (basis: official close)';
       sigPb.className = 'signal short';
     } else {
       sigPb.textContent = '等待条件触发 — VIX '+vx.toFixed(1)+' / DVOL '+dv.toFixed(1)+' / 比率 '+rt.toFixed(2);
@@ -1714,28 +1735,56 @@ async function init() {
 }
 
 function updateSyncTimestamps(btcData, dvolData) {
-  const now = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
+  const now = new Date();
+  const nowStr = now.toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
+  const nowUTC = now.toISOString().slice(11,16) + ' UTC';
   if(btcData) {
     const el = document.getElementById('syncTimeBtc');
-    if(el) el.textContent = now + ' (自动)';
+    if(el) el.textContent = nowStr + ' / ' + nowUTC + ' (CoinGecko, 自动)';
     const dot = document.getElementById('syncDotBtc');
     if(dot) dot.className = 'sync-dot live';
   }
   if(dvolData) {
     const el = document.getElementById('syncTimeDvol');
-    if(el) el.textContent = now + ' (自动)';
+    // Deribit 返回 candle timestamp
+    let srcTime = nowUTC;
+    if(dvolData.timestamp) {
+      srcTime = new Date(dvolData.timestamp).toISOString().slice(0,16).replace('T',' ') + ' UTC';
+    }
+    if(el) el.textContent = srcTime + ' (Deribit, 自动)';
     const dot = document.getElementById('syncDotDvol');
     if(dot) dot.className = 'sync-dot live';
   }
-  // VIX update time from hardcoded data
+  // VIX: 检测数据陈旧度
+  const lastVix = VIX_HISTORY[VIX_HISTORY.length-1];
   const vixEl = document.getElementById('syncTimeVix');
-  if(vixEl) {
-    const lastVix = VIX_HISTORY[VIX_HISTORY.length-1];
-    vixEl.textContent = lastVix ? lastVix.d + ' (手动)' : '未知';
+  const vixDot = document.getElementById('syncDotVix');
+  let vixStale = true;
+  if(lastVix) {
+    const vixDate = new Date(lastVix.d + 'T16:00:00-05:00'); // ET close
+    const hoursAgo = (now - vixDate) / 3600000;
+    vixStale = hoursAgo > 24;
+    if(vixEl) vixEl.textContent = lastVix.d + ' ET close (硬编码' + (vixStale ? ', >24h 陈旧' : '') + ')';
+    if(vixDot) vixDot.className = vixStale ? 'sync-dot stale' : 'sync-dot manual';
   }
+  // 同步状态
+  const syncStatus = document.getElementById('syncStatus');
+  if(syncStatus) {
+    if(vixStale) {
+      syncStatus.innerHTML = '<span class="sync-badge warn">VIX 陈旧 — 价差/比率/信号可能不准确</span>';
+    } else {
+      syncStatus.innerHTML = '<span class="sync-badge warn">VIX 非实时 (delayed ≥20min) — 信号仅供参考</span>';
+    }
+  }
+  // Day count for Iran event
+  const iranDay0 = new Date('2026-02-28T00:00:00Z');
+  const dayN = Math.floor((now - iranDay0) / 86400000);
+  const dayEl = document.getElementById('playbook-daycount');
+  if(dayEl) dayEl.textContent = '(Day ' + dayN + ' as of ' + now.toISOString().slice(0,10) + ' UTC)';
+
   // Playbook timestamp
   const pbTime = document.getElementById('playbook-time');
-  if(pbTime) pbTime.textContent = new Date().toLocaleString('zh-CN');
+  if(pbTime) pbTime.textContent = now.toISOString().slice(0,16).replace('T',' ') + ' UTC';
 }
 
 // 定时刷新实时价格（每60秒）
@@ -1790,7 +1839,7 @@ const CRISIS_DATA = {
     vix:  [22.3,21.5,30.0,45.3,46.9,52.3,33.6,40.7,37.6,30.1,29.5,28.2,32.6,31.5,34.1,33.8,30.2,28.4,26.5,25.8,25.2,24.7],
     dvol: [49.5,52.6,52.6,55.3,52.8,56.8,53.0,53.6,56.1,53.3,50.4,49.6,48.4,46.9,49.2,52.7,49.4,47.0,46.5,47.0,46.2,46.1],
     btc:  [82514,85238,82526,83164,78211,79179,76329,82622,79596,83601,84523,83656,84106,84931,85073,87452,93576,93605,93873,93809,95031,94256],
-    peakDay: 5, peakLabel: 'VIX 52.3\n峰值', sellDay: 6, sellLabel: '90天暂缓\n反手做多', exitDay: 18, exitLabel: '恢复'
+    peakDay: 5, peakLabel: 'VIX 52.3 峰值\n(4/8, Day 5)', sellDay: 6, sellLabel: '90天暂缓\n反手做多', exitDay: 18, exitLabel: '恢复'
   },
   btccrash2026: {
     name: '2026.2.5 BTC闪崩',
