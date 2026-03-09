@@ -269,8 +269,8 @@
         <div class="zoom-stat"><div class="zs-label">恢复用时</div><div class="zs-val" style="color:var(--green);">~3周</div></div>
       </div>
       <canvas id="chartZoomWar" height="130"></canvas>
-      <h3 style="margin-top:14px;font-size:12px;color:#0ea5e9;font-weight:600;">BTC 价格走势</h3>
-      <canvas id="chartBtcWar" height="70"></canvas>
+      <h3 style="margin-top:14px;font-size:12px;color:var(--text);font-weight:700;">BTC K线</h3>
+      <canvas id="chartBtcWar" height="100"></canvas>
     </div>
     <div class="compare-card right">
       <h3 style="color:var(--accent);">2026年3月9日 今日日内走势 (逐小时)</h3>
@@ -283,8 +283,8 @@
         <div class="zoom-stat"><div class="zs-label">趋势</div><div class="zs-val" style="color:var(--red);">连涨5日</div></div>
       </div>
       <canvas id="chartZoomToday" height="130"></canvas>
-      <h3 style="margin-top:14px;font-size:12px;color:#0ea5e9;font-weight:600;">BTC 价格走势</h3>
-      <canvas id="chartBtcToday" height="70"></canvas>
+      <h3 style="margin-top:14px;font-size:12px;color:var(--text);font-weight:700;">BTC K线</h3>
+      <canvas id="chartBtcToday" height="100"></canvas>
     </div>
   </div>
   <div style="margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04);">
@@ -475,7 +475,15 @@ const TODAY_INTRADAY = {
            '16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
   vix:  [28.5,28.8,29.0,29.3,29.6,30.0,30.4,30.8,31.2,31.8,33.5,33.0,32.5,32.1,32.4,31.9,31.5,31.0,31.2,31.5,31.7,31.9,31.8,31.9],
   dvol: [72,73,73,74,74,75,76,77,78,79,83,82,81,80,81,80,79,78,79,80,80,80,79,80],
-  btc: [82500,82400,82200,82000,81800,81500,81200,80800,80200,79500,78200,78800,79200,79500,79100,79600,80000,80300,80100,79800,79600,79500,79600,79500]
+  btc: [82500,82400,82200,82000,81800,81500,81200,80800,80200,79500,78200,78800,79200,79500,79100,79600,80000,80300,80100,79800,79600,79500,79600,79500],
+  btcOHLC: [
+    {o:82800,h:83100,l:82300,c:82500},{o:82500,h:82700,l:82100,c:82400},{o:82400,h:82500,l:81900,c:82200},{o:82200,h:82400,l:81800,c:82000},
+    {o:82000,h:82200,l:81600,c:81800},{o:81800,h:82000,l:81300,c:81500},{o:81500,h:81700,l:81000,c:81200},{o:81200,h:81300,l:80500,c:80800},
+    {o:80800,h:80900,l:79800,c:80200},{o:80200,h:80300,l:79200,c:79500},{o:79500,h:79600,l:77800,c:78200},{o:78200,h:79100,l:78000,c:78800},
+    {o:78800,h:79500,l:78600,c:79200},{o:79200,h:79800,l:79100,c:79500},{o:79500,h:79600,l:78800,c:79100},{o:79100,h:79900,l:79000,c:79600},
+    {o:79600,h:80300,l:79500,c:80000},{o:80000,h:80600,l:79900,c:80300},{o:80300,h:80400,l:79800,c:80100},{o:80100,h:80200,l:79500,c:79800},
+    {o:79800,h:79900,l:79300,c:79600},{o:79600,h:79800,l:79200,c:79500},{o:79500,h:79900,l:79300,c:79600},{o:79600,h:79700,l:79200,c:79500}
+  ]
 };
 
 const TRADEWAR_DAILY = {
@@ -486,6 +494,14 @@ const TRADEWAR_DAILY = {
          30.1,29.5,28.2,32.6,31.5,34.1,33.8,30.2,28.4,26.5,25.8,25.2,24.7],
   dvol: [58,60,75,95,105,110,82,90,85,72,70,68,78,75,77,75,70,65,62,60,59,58],
   btc: [84000,83500,80000,76500,75200,74800,79500,77000,78000,80500,81000,81500,79500,80000,79000,79500,80500,81500,82000,82500,83000,83500],
+  btcOHLC: [
+    {o:84500,h:85200,l:83600,c:84000},{o:84000,h:84300,l:82800,c:83500},{o:83500,h:83800,l:78500,c:80000},{o:80000,h:80500,l:75200,c:76500},
+    {o:76500,h:77800,l:74500,c:75200},{o:75200,h:76000,l:73800,c:74800},{o:74800,h:80200,l:74200,c:79500},{o:79500,h:79800,l:76200,c:77000},
+    {o:77000,h:78500,l:76500,c:78000},{o:78000,h:81200,l:77800,c:80500},{o:80500,h:81500,l:80000,c:81000},{o:81000,h:82000,l:80800,c:81500},
+    {o:81500,h:81800,l:79000,c:79500},{o:79500,h:80500,l:79200,c:80000},{o:80000,h:80200,l:78500,c:79000},{o:79000,h:80000,l:78800,c:79500},
+    {o:79500,h:81000,l:79200,c:80500},{o:80500,h:82000,l:80200,c:81500},{o:81500,h:82500,l:81200,c:82000},{o:82000,h:83000,l:81800,c:82500},
+    {o:82500,h:83500,l:82200,c:83000},{o:83000,h:84000,l:82800,c:83500}
+  ],
   events: {2:'关税公布',3:'关税生效',4:'中国报复',5:'VIX峰值52.3',6:'90天暂缓',9:'初步企稳'}
 };
 
@@ -737,51 +753,114 @@ function drawCompareCharts() {
     };
   }
 
-  // BTC tooltip + 线段颜色配置
-  function btcChartConfig(btcData) {
-    const first = btcData[0];
+  // K线图（蜡烛图）绘制插件
+  const candlestickPlugin = {
+    id:'candlestick',
+    afterDatasetDraw(chart, args) {
+      if(args.index !== 0) return;
+      const {ctx} = chart;
+      const meta = chart.getDatasetMeta(0);
+      const ohlc = chart._ohlcData;
+      if(!ohlc) return;
+      meta.data.forEach((bar,i)=>{
+        if(!ohlc[i]) return;
+        const {o,h,l,c} = ohlc[i];
+        const yScale = chart.scales.y;
+        const x = bar.x;
+        const barW = Math.max(bar.width * 0.85, 6);
+        const yO = yScale.getPixelForValue(o);
+        const yC = yScale.getPixelForValue(c);
+        const yH = yScale.getPixelForValue(h);
+        const yL = yScale.getPixelForValue(l);
+        const bull = c >= o;
+        const color = bull ? '#16a34a' : '#dc2626';
+        const fillColor = bull ? 'rgba(22,163,74,.8)' : 'rgba(220,38,38,.8)';
+        // 影线
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x, yH);
+        ctx.lineTo(x, Math.min(yO,yC));
+        ctx.moveTo(x, Math.max(yO,yC));
+        ctx.lineTo(x, yL);
+        ctx.stroke();
+        // 实体
+        const top = Math.min(yO,yC);
+        const bodyH = Math.max(Math.abs(yO-yC), 1);
+        ctx.fillStyle = fillColor;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.fillRect(x - barW/2, top, barW, bodyH);
+        ctx.strokeRect(x - barW/2, top, barW, bodyH);
+        ctx.restore();
+      });
+    }
+  };
+
+  // K线图tooltip：显示OHLC + 涨跌幅
+  function candleTooltip(ohlcData, firstClose) {
     return {
-      dataset: {
-        label:'BTC 价格',data:btcData,
-        borderWidth:2.5,pointRadius:3,tension:.3,fill:true,
-        segment:{
-          borderColor:ctx=>{
-            const v = ctx.p1.parsed.y;
-            return v >= first ? '#16a34a' : '#dc2626';
+      tooltip:{
+        backgroundColor:'rgba(15,15,15,.92)',
+        titleFont:{size:12,weight:'bold'},
+        bodyFont:{size:12,weight:'600'},
+        padding:12,
+        cornerRadius:6,
+        displayColors:false,
+        callbacks:{
+          label(ctx) {
+            const i = ctx.dataIndex;
+            const d = ohlcData[i];
+            if(!d) return '';
+            const pct = ((d.c - firstClose)/firstClose*100).toFixed(2);
+            const sign = pct >= 0 ? '+' : '';
+            const arrow = pct >= 0 ? '▲' : '▼';
+            return [
+              `开 $${(d.o/1000).toFixed(1)}k   高 $${(d.h/1000).toFixed(1)}k`,
+              `低 $${(d.l/1000).toFixed(1)}k   收 $${(d.c/1000).toFixed(1)}k`,
+              `${arrow} ${sign}${pct}%`
+            ];
           },
-          backgroundColor:ctx=>{
-            const v = ctx.p1.parsed.y;
-            return v >= first ? 'rgba(22,163,74,.12)' : 'rgba(220,38,38,.12)';
-          }
-        },
-        borderColor:'#16a34a',
-        backgroundColor:'rgba(22,163,74,.08)',
-        pointBackgroundColor: btcData.map(v=>v>=first?'#16a34a':'#dc2626')
-      },
-      tooltipPlugin: {
-        tooltip:{
-          backgroundColor:'rgba(0,0,0,.85)',
-          titleFont:{size:12,weight:'bold'},
-          bodyFont:{size:13,weight:'bold'},
-          padding:10,
-          cornerRadius:6,
-          callbacks:{
-            label(ctx) {
-              const v = ctx.parsed.y;
-              const pct = ((v - first)/first*100).toFixed(2);
-              const sign = pct >= 0 ? '+' : '';
-              const arrow = pct >= 0 ? '▲' : '▼';
-              return `BTC $${(v/1000).toFixed(1)}k   ${arrow} ${sign}${pct}%`;
-            },
-            labelColor(ctx) {
-              const v = ctx.parsed.y;
-              const c = v >= first ? '#16a34a' : '#dc2626';
-              return {borderColor:c, backgroundColor:c, borderWidth:2, borderRadius:2};
-            }
+          labelTextColor(ctx) {
+            const i = ctx.dataIndex;
+            const d = ohlcData[i];
+            if(!d) return '#fff';
+            return d.c >= firstClose ? '#4ade80' : '#f87171';
           }
         }
       }
     };
+  }
+
+  // 创建K线图实例
+  function createCandleChart(canvasId, labels, ohlcData, firstClose, pairedChartFn) {
+    // 用close作为数据驱动bar位置（实际绘制由plugin接管）
+    const closeData = ohlcData.map(d=>d.c);
+    const chart = new Chart(document.getElementById(canvasId),{
+      type:'bar',
+      data:{labels, datasets:[{
+        label:'BTC',data:closeData,
+        backgroundColor:'transparent',borderColor:'transparent',borderWidth:0,
+        barPercentage:0.6, categoryPercentage:0.8
+      }]},
+      options:{responsive:true,interaction:{mode:'index',intersect:false},
+        scales:{
+          x:{grid:{color:G},ticks:{color:T,font:{size:9}}},
+          y:{
+            grid:{color:G},
+            ticks:{color:T,font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},
+            title:{display:true,text:'BTC ($)',color:T},
+            min:Math.min(...ohlcData.map(d=>d.l))*0.995,
+            max:Math.max(...ohlcData.map(d=>d.h))*1.005
+          }
+        },
+        plugins:{legend:{display:false},...candleTooltip(ohlcData,firstClose)}
+      },
+      plugins:[candlestickPlugin, syncPlugin(pairedChartFn)]
+    });
+    chart._ohlcData = ohlcData;
+    return chart;
   }
 
   // 左：关税战
@@ -841,35 +920,11 @@ function drawCompareCharts() {
     plugins:[syncPlugin(()=>btcChartToday)]
   });
 
-  // BTC 价格子图 - 关税战
-  const warBtcCfg = btcChartConfig(wd.btc);
-  btcChartWar = new Chart(document.getElementById('chartBtcWar'),{
-    type:'line',
-    data:{labels:wd.labels,datasets:[warBtcCfg.dataset]},
-    options:{responsive:true,interaction:{mode:'index',intersect:false},
-      scales:{
-        x:{grid:{color:G},ticks:{color:T,font:{size:9}}},
-        y:{grid:{color:G},ticks:{color:T,font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},title:{display:true,text:'BTC ($)',color:T}}
-      },
-      plugins:{legend:{display:false},...warBtcCfg.tooltipPlugin}
-    },
-    plugins:[syncPlugin(()=>zoomChartWar)]
-  });
+  // BTC K线图 - 关税战
+  btcChartWar = createCandleChart('chartBtcWar', wd.labels, wd.btcOHLC, wd.btcOHLC[0].o, ()=>zoomChartWar);
 
-  // BTC 价格子图 - 今日日内
-  const todayBtcCfg = btcChartConfig(td.btc);
-  btcChartToday = new Chart(document.getElementById('chartBtcToday'),{
-    type:'line',
-    data:{labels:td.labels,datasets:[todayBtcCfg.dataset]},
-    options:{responsive:true,interaction:{mode:'index',intersect:false},
-      scales:{
-        x:{grid:{color:G},ticks:{color:T,font:{size:9}}},
-        y:{grid:{color:G},ticks:{color:T,font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},title:{display:true,text:'BTC ($)',color:T}}
-      },
-      plugins:{legend:{display:false},...todayBtcCfg.tooltipPlugin}
-    },
-    plugins:[syncPlugin(()=>zoomChartToday)]
-  });
+  // BTC K线图 - 今日日内
+  btcChartToday = createCandleChart('chartBtcToday', td.labels, td.btcOHLC, td.btcOHLC[0].o, ()=>zoomChartToday);
 
 }
 
