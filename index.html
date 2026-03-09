@@ -182,7 +182,7 @@
 
 <div class="header">
   <h1><span class="dvol">DVOL</span> vs <span class="vix">VIX</span> 波动率套利分析</h1>
-  <p>Deribit BTC 隐含波动率指数 vs CBOE 恐慌指数 | 跨市场波动率套利分析面板 | 所有时间为香港时间 (HKT)</p>
+  <p>Deribit BTC 隐含波动率指数 vs CBOE 恐慌指数 | 跨市场波动率套利分析面板</p>
 </div>
 
 <div class="nav-tabs">
@@ -273,14 +273,14 @@
       <canvas id="chartBtcWar" height="100"></canvas>
     </div>
     <div class="compare-card right">
-      <h3 style="color:var(--accent);">2026年3月9日 今日日内走势 (香港时间)</h3>
+      <h3 style="color:var(--accent);">2026年2-3月 本轮冲击 (2/20 - 3/9)</h3>
       <div class="zoom-stats">
         <div class="zoom-stat"><div class="zs-label">VIX 当前</div><div class="zs-val" style="color:var(--purple);">31.9</div></div>
-        <div class="zoom-stat"><div class="zs-label">VIX 日高</div><div class="zs-val" style="color:var(--red);">33.5</div></div>
-        <div class="zoom-stat"><div class="zs-label">距4月峰值</div><div class="zs-val" style="color:var(--orange);">-39%</div></div>
+        <div class="zoom-stat"><div class="zs-label">VIX 起点</div><div class="zs-val" style="color:var(--purple);">15.8</div></div>
+        <div class="zoom-stat"><div class="zs-label">VIX 涨幅</div><div class="zs-val" style="color:var(--red);">+102%</div></div>
         <div class="zoom-stat"><div class="zs-label">DVOL 当前</div><div class="zs-val" style="color:var(--orange);">80</div></div>
-        <div class="zoom-stat"><div class="zs-label">DVOL 日高</div><div class="zs-val" style="color:var(--red);">83</div></div>
-        <div class="zoom-stat"><div class="zs-label">趋势</div><div class="zs-val" style="color:var(--red);">连涨5日</div></div>
+        <div class="zoom-stat"><div class="zs-label">DVOL 起点</div><div class="zs-val" style="color:var(--orange);">48</div></div>
+        <div class="zoom-stat"><div class="zs-label">持续</div><div class="zs-val" style="color:var(--red);">~18天(进行中)</div></div>
       </div>
       <canvas id="chartZoomToday" height="130"></canvas>
       <h3 style="margin-top:14px;font-size:12px;color:var(--text);font-weight:700;">BTC K线</h3>
@@ -292,7 +292,7 @@
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;">
       <div style="text-align:center;"><div style="font-size:11px;color:var(--muted);font-weight:600;">指标</div><div style="font-size:12px;margin-top:6px;font-weight:700;">VIX 峰值</div><div style="font-size:12px;margin-top:4px;font-weight:700;">DVOL 峰值</div><div style="font-size:12px;margin-top:4px;font-weight:700;">价差峰值</div><div style="font-size:12px;margin-top:4px;font-weight:700;">持续时间</div></div>
       <div style="text-align:center;"><div style="font-size:11px;color:var(--red);font-weight:600;">2025.4 关税战</div><div style="font-size:12px;margin-top:6px;font-weight:800;color:var(--red);">52.3</div><div style="font-size:12px;margin-top:4px;font-weight:800;color:var(--red);">110</div><div style="font-size:12px;margin-top:4px;">57.7</div><div style="font-size:12px;margin-top:4px;">~2周高位</div></div>
-      <div style="text-align:center;"><div style="font-size:11px;color:var(--accent);font-weight:600;">2026.3 当前</div><div style="font-size:12px;margin-top:6px;font-weight:800;color:var(--orange);">31.9 (进行中)</div><div style="font-size:12px;margin-top:4px;font-weight:800;color:var(--orange);">80 (进行中)</div><div style="font-size:12px;margin-top:4px;">48.1</div><div style="font-size:12px;margin-top:4px;">第5天 (攀升中)</div></div>
+      <div style="text-align:center;"><div style="font-size:11px;color:var(--accent);font-weight:600;">2026.2-3 当前</div><div style="font-size:12px;margin-top:6px;font-weight:800;color:var(--orange);">31.9 (进行中)</div><div style="font-size:12px;margin-top:4px;font-weight:800;color:var(--orange);">80 (进行中)</div><div style="font-size:12px;margin-top:4px;">48.1</div><div style="font-size:12px;margin-top:4px;">~18天 (攀升中)</div></div>
       <div style="text-align:center;"><div style="font-size:11px;color:var(--muted);font-weight:600;">判断</div><div style="font-size:12px;margin-top:6px;color:var(--orange);font-weight:600;">约为峰值的61%</div><div style="font-size:12px;margin-top:4px;color:var(--orange);font-weight:600;">约为峰值的73%</div><div style="font-size:12px;margin-top:4px;color:var(--orange);font-weight:600;">价差偏低于上次</div><div style="font-size:12px;margin-top:4px;color:var(--orange);font-weight:600;">关注何时见顶</div></div>
     </div>
   </div>
@@ -469,20 +469,19 @@ const KEY_EVENTS = [
 ];
 
 // ========== 对比面板数据 ==========
-const TODAY_INTRADAY = {
-  labels: ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00',
-           '16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00',
-           '00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00'],
-  vix:  [28.5,28.8,29.0,29.3,29.6,30.0,30.4,30.8,31.2,31.8,33.5,33.0,32.5,32.1,32.4,31.9,31.5,31.0,31.2,31.5,31.7,31.9,31.8,31.9],
-  dvol: [72,73,73,74,74,75,76,77,78,79,83,82,81,80,81,80,79,78,79,80,80,80,79,80],
-  btc: [82500,82400,82200,82000,81800,81500,81200,80800,80200,79500,78200,78800,79200,79500,79100,79600,80000,80300,80100,79800,79600,79500,79600,79500],
+const CURRENT_DAILY = {
+  labels: ['2/20','2/21','2/24','2/25','2/26','2/27','2/28',
+           '3/3','3/4','3/5','3/6','3/7','3/9'],
+  vix:  [15.8,16.2,17.5,18.8,19.1,22.4,22.8,
+         22.8,24.5,27.0,29.3,30.8,31.9],
+  dvol: [48,49,52,54,56,62,62,
+         62,66,70,74,78,80],
+  btc: [98200,96500,91500,88000,84500,84200,84500,
+        85000,82500,81000,80200,79800,79500],
   btcOHLC: [
-    {o:82800,h:83100,l:82300,c:82500},{o:82500,h:82700,l:82100,c:82400},{o:82400,h:82500,l:81900,c:82200},{o:82200,h:82400,l:81800,c:82000},
-    {o:82000,h:82200,l:81600,c:81800},{o:81800,h:82000,l:81300,c:81500},{o:81500,h:81700,l:81000,c:81200},{o:81200,h:81300,l:80500,c:80800},
-    {o:80800,h:80900,l:79800,c:80200},{o:80200,h:80300,l:79200,c:79500},{o:79500,h:79600,l:77800,c:78200},{o:78200,h:79100,l:78000,c:78800},
-    {o:78800,h:79500,l:78600,c:79200},{o:79200,h:79800,l:79100,c:79500},{o:79500,h:79600,l:78800,c:79100},{o:79100,h:79900,l:79000,c:79600},
-    {o:79600,h:80300,l:79500,c:80000},{o:80000,h:80600,l:79900,c:80300},{o:80300,h:80400,l:79800,c:80100},{o:80100,h:80200,l:79500,c:79800},
-    {o:79800,h:79900,l:79300,c:79600},{o:79600,h:79800,l:79200,c:79500},{o:79500,h:79900,l:79300,c:79600},{o:79600,h:79700,l:79200,c:79500}
+    {o:99000,h:99200,l:97500,c:98200},{o:98200,h:98500,l:95800,c:96500},{o:96500,h:96800,l:90200,c:91500},{o:91500,h:92000,l:86800,c:88000},
+    {o:88000,h:88500,l:83500,c:84500},{o:84500,h:85200,l:83000,c:84200},{o:84200,h:85500,l:83800,c:84500},
+    {o:84500,h:86200,l:83500,c:85000},{o:85000,h:85500,l:81800,c:82500},{o:82500,h:83000,l:80200,c:81000},{o:81000,h:81500,l:79500,c:80200},{o:80200,h:80800,l:79200,c:79800},{o:79800,h:80200,l:78800,c:79500}
   ]
 };
 
@@ -893,7 +892,7 @@ function drawCompareCharts() {
   });
 
   // 右：今日日内
-  const td = TODAY_INTRADAY;
+  const td = CURRENT_DAILY;
   zoomChartToday = new Chart(document.getElementById('chartZoomToday'),{
     type:'line',
     data:{labels:td.labels,datasets:[
@@ -908,10 +907,8 @@ function drawCompareCharts() {
       },
       plugins:{legend:{labels:{color:T,font:{size:11}}},
         annotation:{annotations:{
-          peak:{type:'line',xMin:'18:00',xMax:'18:00',borderColor:'#dc2626',borderWidth:1.5,borderDash:[6,3],
-            label:{display:true,content:'日内高点',position:'start',color:'#dc2626',font:{size:10,weight:'bold'},backgroundColor:LBG,padding:3}},
-          open:{type:'line',xMin:'21:30',xMax:'21:30',borderColor:'rgba(0,0,0,.15)',borderWidth:1,borderDash:[4,4],
-            label:{display:true,content:'美股开盘',position:'end',color:T,font:{size:9},backgroundColor:LBG,padding:3}},
+          tariff:{type:'line',xMin:'3/6',xMax:'3/6',borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
+            label:{display:true,content:'新关税冲击',position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3}},
           vixRef:{type:'line',yMin:52.3,yMax:52.3,yScaleID:'yVix',borderColor:'rgba(220,38,38,.25)',borderWidth:1,borderDash:[8,4],
             label:{display:true,content:'2025.4 VIX峰值 52.3',position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}}
         }}
