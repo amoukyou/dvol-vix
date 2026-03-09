@@ -257,6 +257,13 @@
 <!-- ==================== Tab 2: 对比 ==================== -->
 <div class="tab-panel" id="tab-compare">
 <div style="padding:16px 24px;">
+  <div style="margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+    <span style="color:var(--muted);font-size:12px;font-weight:600;">历史事件对比：</span>
+    <div class="pill-group" id="eventPills">
+      <button class="active" onclick="switchEvent('tradewar',this)">2025.4 关税战</button>
+      <button onclick="switchEvent('iranoil',this)">2026.2.28 美伊冲突·石油危机</button>
+    </div>
+  </div>
   <div class="compare-grid">
     <div class="compare-card left">
       <h3 id="histTitle" style="color:var(--red);"></h3>
@@ -400,7 +407,7 @@ const VIX_HISTORY = [
   {d:'2025-10-10',vix:20.8},{d:'2025-10-24',vix:18.2},{d:'2025-10-31',vix:19.7},
   {d:'2025-11-07',vix:17.3},{d:'2025-11-21',vix:16.8},{d:'2025-11-28',vix:15.4},
   {d:'2025-12-12',vix:18.6},{d:'2025-12-19',vix:24.1},{d:'2025-12-31',vix:17.5},
-  {d:'2026-01-09',vix:18.9},{d:'2026-01-13',vix:17.5},{d:'2026-01-16',vix:36.8},{d:'2026-01-17',vix:40.2},{d:'2026-01-20',vix:38.5},{d:'2026-01-24',vix:30.2},{d:'2026-01-30',vix:17.8},
+  {d:'2026-01-09',vix:18.9},{d:'2026-01-17',vix:16.2},{d:'2026-01-30',vix:17.8},
   {d:'2026-02-06',vix:19.5},{d:'2026-02-14',vix:16.7},{d:'2026-02-27',vix:22.4},
   {d:'2026-03-02',vix:22.8},{d:'2026-03-04',vix:24.5},{d:'2026-03-05',vix:27.0},
   {d:'2026-03-06',vix:29.3},{d:'2026-03-07',vix:30.8},{d:'2026-03-09',vix:31.9}
@@ -436,7 +443,7 @@ const DVOL_HISTORY = [
   {d:'2025-10-10',dvol:58},{d:'2025-10-24',dvol:52},{d:'2025-10-31',dvol:55},
   {d:'2025-11-07',dvol:50},{d:'2025-11-21',dvol:48},{d:'2025-11-28',dvol:46},
   {d:'2025-12-12',dvol:52},{d:'2025-12-19',dvol:62},{d:'2025-12-31',dvol:50},
-  {d:'2026-01-09',dvol:54},{d:'2026-01-13',dvol:50},{d:'2026-01-16',dvol:88},{d:'2026-01-17',dvol:95},{d:'2026-01-20',dvol:92},{d:'2026-01-24',dvol:75},{d:'2026-01-30',dvol:52},
+  {d:'2026-01-09',dvol:54},{d:'2026-01-17',dvol:48},{d:'2026-01-30',dvol:52},
   {d:'2026-02-06',dvol:56},{d:'2026-02-14',dvol:50},{d:'2026-02-27',dvol:62},
   {d:'2026-03-02',dvol:62},{d:'2026-03-04',dvol:66},{d:'2026-03-05',dvol:70},
   {d:'2026-03-06',dvol:74},{d:'2026-03-07',dvol:78},{d:'2026-03-09',dvol:80}
@@ -450,8 +457,7 @@ const KEY_EVENTS = [
   {d:'2025-04-04', label:'对等关税生效', color:'#dc2626'},
   {d:'2025-04-08', label:'贸易战升级 VIX>52', color:'#dc2626'},
   {d:'2025-04-09', label:'90天关税暂缓', color:'#16a34a'},
-  {d:'2026-01-16', label:'美伊冲突·油价暴涨', color:'#dc2626'},
-  {d:'2026-03-06', label:'新关税政策冲击', color:'#dc2626'},
+  {d:'2026-02-28', label:'哈梅内伊遇袭·油价飙升', color:'#dc2626'},
   {d:'2026-03-09', label:'今天 VIX 31.9', color:'#2563eb'}
 ];
 
@@ -494,23 +500,16 @@ const TRADEWAR_DAILY = {
 };
 
 const IRANOIL_DAILY = {
-  labels: ['1/13','1/14','1/15','1/16','1/17','1/20','1/21','1/22','1/23','1/24',
-           '1/27','1/28','1/29','1/30','1/31','2/3','2/4','2/5','2/6','2/7'],
-  vix:  [17.5,19.2,28.5,36.8,40.2,38.5,35.1,31.8,33.5,30.2,
-         28.6,26.3,24.8,22.5,20.1,18.8,17.5,16.8,16.2,15.5],
-  dvol: [50,55,72,88,95,92,85,78,82,75,
-         72,68,65,60,56,53,50,48,47,46],
-  btc: [95000,93500,88000,82000,78500,79200,81500,84000,82500,85000,
-        86500,88000,89500,91000,92500,94000,95500,96000,96800,97500],
+  labels: ['2/27','2/28','3/3','3/4','3/5','3/6','3/7','3/9'],
+  vix:  [19.6,22.8,24.5,27.0,29.3,30.8,31.9,31.9],
+  dvol: [55,62,66,70,74,78,80,80],
+  btc: [84200,84500,85000,82500,81000,80200,79800,79500],
   btcOHLC: [
-    {o:96000,h:96500,l:94200,c:95000},{o:95000,h:95500,l:92800,c:93500},{o:93500,h:94000,l:86500,c:88000},{o:88000,h:88500,l:80500,c:82000},
-    {o:82000,h:82800,l:77200,c:78500},{o:78500,h:80500,l:78000,c:79200},{o:79200,h:82500,l:79000,c:81500},{o:81500,h:85000,l:81200,c:84000},
-    {o:84000,h:84500,l:81800,c:82500},{o:82500,h:86000,l:82200,c:85000},{o:85000,h:87500,l:84800,c:86500},{o:86500,h:88800,l:86200,c:88000},
-    {o:88000,h:90200,l:87800,c:89500},{o:89500,h:91800,l:89200,c:91000},{o:91000,h:93200,l:90800,c:92500},{o:92500,h:94500,l:92200,c:94000},
-    {o:94000,h:96000,l:93800,c:95500},{o:95500,h:96500,l:95200,c:96000},{o:96000,h:97200,l:95800,c:96800},{o:96800,h:98000,l:96500,c:97500}
+    {o:84500,h:85200,l:83000,c:84200},{o:84200,h:85500,l:83800,c:84500},{o:84500,h:86200,l:83500,c:85000},{o:85000,h:85500,l:81800,c:82500},
+    {o:82500,h:83000,l:80200,c:81000},{o:81000,h:81500,l:79500,c:80200},{o:80200,h:80800,l:79200,c:79800},{o:79800,h:80200,l:78800,c:79500}
   ],
-  events: {1:'伊朗扣押油轮',2:'美军空袭',3:'霍尔木兹海峡封锁',4:'油价$120+',6:'多方斡旋',9:'紧张缓和'},
-  weekdays: ['周二','周三','周四','周五','周六','周一','周二','周三','周四','周五','周一','周二','周三','周四','周五','周一','周二','周三','周四','周五']
+  events: {1:'哈梅内伊遇袭身亡',3:'油价突破$110',5:'伊朗报复威胁',7:'进行中'},
+  weekdays: ['周四','周五','周一','周二','周三','周四','周五','周日']
 };
 
 // 历史事件元数据
@@ -526,12 +525,12 @@ const HIST_EVENTS = {
   },
   iranoil: {
     data: null, // will be set to IRANOIL_DAILY
-    title: '2026年1月 美伊冲突·石油危机 (1/13 - 2/7)',
+    title: '2026年2-3月 美伊冲突·石油危机 (2/28起)',
     stats: [
-      {label:'VIX 峰值',val:'40.2',color:'var(--red)'},{label:'VIX 起点',val:'17.5',color:'var(--purple)'},{label:'VIX 涨幅',val:'+130%',color:'var(--red)'},
-      {label:'DVOL 峰值',val:'95',color:'var(--red)'},{label:'DVOL 起点',val:'50',color:'var(--orange)'},{label:'恢复用时',val:'~2.5周',color:'var(--green)'}
+      {label:'VIX 当前',val:'31.9',color:'var(--red)'},{label:'VIX 事发前',val:'19.6',color:'var(--purple)'},{label:'VIX 涨幅',val:'+63%',color:'var(--red)'},
+      {label:'DVOL 当前',val:'80',color:'var(--orange)'},{label:'DVOL 事发前',val:'55',color:'var(--orange)'},{label:'状态',val:'进行中',color:'var(--red)'}
     ],
-    summary: {name:'2026.1 美伊·石油',vixPeak:'40.2',dvolPeak:'95',spreadPeak:'54.8',duration:'~2周高位'}
+    summary: {name:'2026.2 美伊·石油',vixPeak:'31.9+',dvolPeak:'80+',spreadPeak:'48.1+',duration:'进行中(第10天)'}
   }
 };
 HIST_EVENTS.tradewar.data = TRADEWAR_DAILY;
@@ -975,8 +974,8 @@ function drawCompareCharts(eventKey) {
       },
       plugins:{legend:{labels:{color:T,font:{size:11}}},
         annotation:{annotations:{
-          tariff:{type:'line',xMin:'3/6 周四',xMax:'3/6 周四',borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
-            label:{display:true,content:'新关税冲击',position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3}},
+          iran:{type:'line',xMin:'2/28 周五',xMax:'2/28 周五',borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
+            label:{display:true,content:'哈梅内伊遇袭',position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3}},
           vixRef:{type:'line',yMin:vixPeak,yMax:vixPeak,yScaleID:'yVix',borderColor:'rgba(220,38,38,.25)',borderWidth:1,borderDash:[8,4],
             label:{display:true,content:sm.name+' VIX峰值 '+sm.vixPeak,position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}}
         }}
