@@ -77,7 +77,7 @@
   .pill-group button.active { background:var(--accent); color:#fff; }
 
   .dashboard {
-    display:grid; grid-template-columns:1fr 1fr 1fr 1fr;
+    display:grid; grid-template-columns:repeat(5, 1fr);
     gap:14px; padding:16px 24px;
   }
   .metric-card {
@@ -173,7 +173,7 @@
   }
 
   @media(max-width:900px) {
-    .dashboard { grid-template-columns:1fr 1fr; }
+    .dashboard { grid-template-columns:1fr 1fr 1fr; }
     .charts-grid, .strategies, .info-grid, .compare-grid { grid-template-columns:1fr; }
   }
 </style>
@@ -182,7 +182,7 @@
 
 <div class="header">
   <h1><span class="dvol">DVOL</span> vs <span class="vix">VIX</span> 波动率套利分析</h1>
-  <p>Deribit BTC 隐含波动率指数 vs CBOE 恐慌指数 | 跨市场波动率套利分析面板</p>
+  <p id="headerSub">Deribit BTC 隐含波动率指数 vs CBOE 恐慌指数 | 跨市场波动率套利分析面板</p>
 </div>
 
 <div class="nav-tabs">
@@ -217,6 +217,11 @@
     <div class="label">VIX (标普恐慌指数)</div>
     <div class="value" id="m-vix" style="color:var(--purple);">--</div>
     <div class="sub" id="m-vix-chg">--</div>
+  </div>
+  <div class="metric-card">
+    <div class="label">BTC 价格</div>
+    <div class="value" id="m-btc" style="color:var(--text);">--</div>
+    <div class="sub" id="m-btc-chg">--</div>
   </div>
   <div class="metric-card">
     <div class="label">价差 (DVOL-VIX)</div>
@@ -274,14 +279,7 @@
     </div>
     <div class="compare-card right">
       <h3 style="color:var(--accent);">2026年2-3月 本轮冲击 (2/20 - 3/9)</h3>
-      <div class="zoom-stats">
-        <div class="zoom-stat"><div class="zs-label">VIX 当前</div><div class="zs-val" style="color:var(--purple);">31.9</div></div>
-        <div class="zoom-stat"><div class="zs-label">VIX 起点</div><div class="zs-val" style="color:var(--purple);">15.8</div></div>
-        <div class="zoom-stat"><div class="zs-label">VIX 涨幅</div><div class="zs-val" style="color:var(--red);">+102%</div></div>
-        <div class="zoom-stat"><div class="zs-label">DVOL 当前</div><div class="zs-val" style="color:var(--orange);">80</div></div>
-        <div class="zoom-stat"><div class="zs-label">DVOL 起点</div><div class="zs-val" style="color:var(--orange);">48</div></div>
-        <div class="zoom-stat"><div class="zs-label">持续</div><div class="zs-val" style="color:var(--red);">~18天(进行中)</div></div>
-      </div>
+      <div class="zoom-stats" id="rightPanelStats"></div>
       <canvas id="chartZoomToday" height="130"></canvas>
       <h3 style="margin-top:14px;font-size:12px;color:var(--text);font-weight:700;">BTC K线</h3>
       <canvas id="chartBtcToday" height="100"></canvas>
@@ -322,6 +320,113 @@
     </div>
   </div>
 </div>
+
+<!-- 危机复盘 + 当前指示 -->
+<div class="strategy-section" style="padding-top:0;">
+  <h2 style="color:var(--red);">历次危机复盘 & 当前操作指示</h2>
+
+  <!-- 三次危机 VIX/DVOL 叠加对比图 -->
+  <div class="chart-box full" style="margin-bottom:16px;">
+    <h3 style="font-size:14px;font-weight:700;color:var(--red);">三次危机 VIX 走势叠加对比（以事发日为 Day 0 对齐）</h3>
+    <canvas id="chartCrisisVix"></canvas>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+    <div class="chart-box">
+      <h3 style="font-size:13px;font-weight:700;color:var(--orange);">三次危机 DVOL 走势叠加</h3>
+      <canvas id="chartCrisisDvol" height="150"></canvas>
+    </div>
+    <div class="chart-box">
+      <h3 style="font-size:13px;font-weight:700;color:var(--text);">三次危机 BTC 涨跌幅叠加 (%)</h3>
+      <canvas id="chartCrisisBtc" height="150"></canvas>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+
+    <!-- 2024.8 日元套利平仓 -->
+    <div class="strat-card" style="border-left:4px solid var(--red);">
+      <h4 style="color:var(--red);">2024.8 日元套利平仓恐慌</h4>
+      <canvas id="chartCrisis2024" height="100" style="margin-bottom:10px;"></canvas>
+      <p>
+        <b>背景：</b>日央行意外加息 → 日元套利交易平仓 → 全球风险资产暴跌<br>
+        <b>VIX：</b>15 → <b style="color:var(--red);">38.6</b>（+157%，8/5 当天）<br>
+        <b>DVOL：</b>50 → <b style="color:var(--red);">90</b>（+80%）<br>
+        <b>BTC：</b>$61.5k → $49.5k（-20%）<br><br>
+        <b style="color:var(--green);">正确操作：</b><br>
+        ① 恐慌爆发当天（8/5），VIX 飙升到 38 → <b>立刻卖出 VIX 看涨期权（或做空 UVXY）</b>，因为纯流动性冲击消退极快<br>
+        ② 同时 <b>买入 BTC 看涨期权（低行权价 call）</b>，DVOL 虽高但 BTC 超跌，实际波动率迅速回落 → 方向性获利<br>
+        ③ 3 天内 VIX 回到 20、DVOL 回到 60 → <b>全部平仓</b>
+      </p>
+      <div class="signal long">结果：VIX 3天腰斩 + BTC 2周收复，套利窗口仅 3-5 天</div>
+    </div>
+
+    <!-- 2025.4 关税战 -->
+    <div class="strat-card" style="border-left:4px solid var(--red);">
+      <h4 style="color:var(--red);">2025.4 贸易战关税冲击</h4>
+      <canvas id="chartCrisis2025" height="100" style="margin-bottom:10px;"></canvas>
+      <p>
+        <b>背景：</b>对等关税 4/4 生效 → 中国报复 → 贸易战全面升级 → 4/9 宣布 90 天暂缓<br>
+        <b>VIX：</b>21.5 → <b style="color:var(--red);">52.3</b>（+143%，持续约 1 周高位）<br>
+        <b>DVOL：</b>60 → <b style="color:var(--red);">110</b>（+83%）<br>
+        <b>BTC：</b>$84k → $74.8k（-11%）<br><br>
+        <b style="color:var(--green);">正确操作：</b><br>
+        ① 4/3 关税公布 → <b>第一时间买入 VIX 看涨 + 买入 BTC 看跌</b>（双边做多波动率），抢在恐慌传导之前<br>
+        ② 4/8 VIX 突破 50 → <b>开始分批卖出 VIX 多头</b>，因为政策驱动型冲击有明确的"暂缓"预期<br>
+        ③ 4/9 暂缓宣布 → <b>反手做多 BTC + 卖出 DVOL（卖跨式）</b>，波动率会迅速回落<br>
+        ④ 约 3 周后 VIX 回到 25、DVOL 回到 58 → 完全恢复
+      </p>
+      <div class="signal long">结果：政策有明确拐点，VIX 做空时机可精确到"暂缓"公告前后</div>
+    </div>
+
+    <!-- 2026.2 美伊冲突 -->
+    <div class="strat-card" style="border-left:4px solid var(--orange);">
+      <h4 style="color:var(--orange);">2026.2.28 哈梅内伊遇袭 · 石油危机（进行中）</h4>
+      <canvas id="chartCrisis2026" height="100" style="margin-bottom:10px;"></canvas>
+      <p>
+        <b>背景：</b>2/28 哈梅内伊遇袭身亡 → 油价飙升突破 $110 → 伊朗报复威胁 → 全球避险<br>
+        <b>VIX：</b>22.4 → <b style="color:var(--red);" id="crisis-vix">31.9</b>（+42%，仍在攀升）<br>
+        <b>DVOL：</b>55 → <b style="color:var(--red);" id="crisis-dvol">80</b>（+45%，仍在攀升）<br>
+        <b>BTC：</b>$78k → <b style="color:var(--red);" id="crisis-btc">$67.6k</b>（-13%，连跌 10 天）<br><br>
+        <b style="color:var(--green);">复盘类似事件（2020 伊朗危机、2022 俄乌）：</b><br>
+        ① 地缘冲突初期：VIX/DVOL 均快速飙升，但 <b>VIX 反应更快</b>（美股交易时间内即定价），DVOL 因 24/7 交易有滞后<br>
+        ② 冲突如未进一步升级（无全面战争）：VIX 通常在 1-2 周见顶回落，DVOL 滞后 2-3 天跟随<br>
+        ③ 油价冲击对 BTC 影响有限：BTC 中期走势更取决于流动性和避险叙事，非商品价格
+      </p>
+      <div class="signal short">进行中：VIX/DVOL 均未见顶，暂不宜抄底</div>
+    </div>
+
+    <!-- 当前操作指示 -->
+    <div class="strat-card" style="border-left:4px solid var(--accent);background:linear-gradient(135deg,#f0f7ff,#fff);">
+      <h4 style="color:var(--accent);font-size:15px;">当前操作指示</h4>
+      <div id="currentPlaybook">
+        <p style="margin-bottom:10px;">
+          <b>阶段判断：</b><span style="color:var(--red);font-weight:800;">冲击扩散期（第 10 天）</span><br>
+          <span style="font-size:11px;color:var(--muted);">参考关税战：第 6 天见 VIX 峰值 52.3，当前仅 31.9 → 尚未到达历史级别恐慌</span>
+        </p>
+        <p style="margin-bottom:8px;">
+          <b style="color:var(--red);">⚠ 目前不要做的事：</b><br>
+          · 不要抄底 BTC — 连跌趋势未止，DVOL 仍在攀升意味着期权市场预期更大波动<br>
+          · 不要做空 VIX — 地缘冲突不像关税战有"暂缓"拐点，时间不可预测
+        </p>
+        <p style="margin-bottom:8px;">
+          <b style="color:var(--green);">✓ 可以做的事：</b><br>
+          · <b>买入 BTC 远月（60-90天）看跌期权做保险</b> — DVOL 80 虽贵但若冲突升级可到 120+<br>
+          · <b>VIX > 35 时开始小仓位卖出 VIX 看涨</b> — 分批建仓，止损设在 VIX 45<br>
+          · <b>关注油价信号</b>：若油价从 $110 回落至 $95 以下 → 恐慌情绪转折信号
+        </p>
+        <p>
+          <b style="color:var(--accent);">触发条件（自动转为进攻）：</b><br>
+          · VIX 连续 2 天下跌且 < 28 → <b>做多 BTC + 卖出 DVOL 跨式</b><br>
+          · DVOL/VIX 比率回落至 2.0 以下 → <b>价差收敛套利</b><br>
+          · 伊朗局势降温（外交斡旋/停火） → <b>全面反手做多风险资产</b>
+        </p>
+      </div>
+      <div class="signal neutral" id="sig-playbook">等待中 — 尚未触发进攻信号</div>
+    </div>
+
+  </div>
+</div>
+
 </div><!-- /tab-strategy -->
 
 <!-- ==================== Tab 4: 指标说明 ==================== -->
@@ -369,7 +474,7 @@
 </div><!-- /tab-info -->
 
 <div class="footer">
-  模拟数据仅供展示 | 实时数据需接入 Deribit API + CBOE 数据源 | 用于教学分析
+  BTC/DVOL 数据自动刷新 (CoinGecko + Deribit API) | VIX 为手动更新 | 仅供教学分析，不构成投资建议
 </div>
 
 <script>
@@ -536,7 +641,7 @@ const TRADEWAR_DAILY = {
 
 const IRANOIL_DAILY = {
   labels: ['2/27','2/28','3/3','3/4','3/5','3/6','3/7','3/9'],
-  vix:  [19.6,22.8,24.5,27.0,29.3,30.8,31.9,31.9],
+  vix:  [22.4,22.8,24.5,27.0,29.3,30.8,31.9,31.9],
   dvol: [55,62,66,70,74,78,80,80],
   btc: [78000,75000,73500,71000,70000,69200,68500,67600],
   btcOHLC: [
@@ -562,7 +667,7 @@ const HIST_EVENTS = {
     data: null, // will be set to IRANOIL_DAILY
     title: '2026年2-3月 美伊冲突·石油危机 (2/28起)',
     stats: [
-      {label:'VIX 当前',val:'31.9',color:'var(--red)'},{label:'VIX 事发前',val:'19.6',color:'var(--purple)'},{label:'VIX 涨幅',val:'+63%',color:'var(--red)'},
+      {label:'VIX 当前',val:'31.9',color:'var(--red)'},{label:'VIX 事发前',val:'22.4',color:'var(--purple)'},{label:'VIX 涨幅',val:'+42%',color:'var(--red)'},
       {label:'DVOL 当前',val:'80',color:'var(--orange)'},{label:'DVOL 事发前',val:'55',color:'var(--orange)'},{label:'状态',val:'进行中',color:'var(--red)'}
     ],
     summary: {name:'2026.2 美伊·石油',vixPeak:'31.9+',dvolPeak:'80+',spreadPeak:'48.1+',duration:'进行中(第10天)'}
@@ -590,8 +695,7 @@ function interpolateDaily(keypoints, startDate, endDate) {
     if (at === bt) { result.push({d:ds, v:before[val]}); }
     else {
       const ratio = (dt - bt) / (at - bt);
-      const noise = (Math.random()-0.5) * (before[val]*0.02);
-      result.push({d:ds, v:+(before[val] + (after[val] - before[val]) * ratio + noise).toFixed(2)});
+      result.push({d:ds, v:+(before[val] + (after[val] - before[val]) * ratio).toFixed(2)});
     }
   }
   return result;
@@ -599,12 +703,13 @@ function interpolateDaily(keypoints, startDate, endDate) {
 
 function generateData(days) {
   const data = { dates:[], dvol:[], vix:[], btc:[], spread:[], ratio:[], corr:[] };
-  const now = new Date('2026-03-09');
+  const now = new Date();
   const startDate = new Date(now); startDate.setDate(startDate.getDate() - days);
   const sd = startDate.toISOString().slice(0,10);
-  const vixDaily = interpolateDaily(VIX_HISTORY, sd, '2026-03-09');
-  const dvolDaily = interpolateDaily(DVOL_HISTORY, sd, '2026-03-09');
-  const btcDaily = interpolateDaily(BTC_HISTORY, sd, '2026-03-09');
+  const ed = now.toISOString().slice(0,10);
+  const vixDaily = interpolateDaily(VIX_HISTORY, sd, ed);
+  const dvolDaily = interpolateDaily(DVOL_HISTORY, sd, ed);
+  const btcDaily = interpolateDaily(BTC_HISTORY, sd, ed);
   const len = Math.min(vixDaily.length, dvolDaily.length, btcDaily.length);
   for (let i = 0; i < len; i++) {
     data.dates.push(vixDaily[i].d); data.vix.push(vixDaily[i].v); data.dvol.push(dvolDaily[i].v);
@@ -649,6 +754,11 @@ function updateMetrics(data) {
   flash('m-vix', vx.toFixed(1), vChg);
   flash('m-spread', sp.toFixed(1), sp - mean(data.spread));
   flash('m-ratio', rt.toFixed(2), 0);
+  const btcVal = data.btc[last], btcPrev = data.btc[last-1];
+  const btcChg = ((btcVal-btcPrev)/btcPrev*100);
+  flash('m-btc', '$'+(btcVal/1000).toFixed(1)+'k', btcChg);
+  const btcEl=document.getElementById('m-btc-chg');
+  btcEl.textContent=(btcChg>=0?'+':'')+btcChg.toFixed(2)+'% 今日'; btcEl.style.color=btcChg>=0?'var(--green)':'var(--red)';
   const dEl=document.getElementById('m-dvol-chg');
   dEl.textContent=(dChg>=0?'+':'')+dChg.toFixed(2)+' 今日'; dEl.style.color=dChg>=0?'var(--red)':'var(--green)';
   const vEl=document.getElementById('m-vix-chg');
@@ -671,6 +781,32 @@ function updateMetrics(data) {
   else{sigC.textContent='适中 | r='+lastCorr.toFixed(2);sigC.className='signal neutral';}
   document.getElementById('m-ratio-sig').textContent='Z 分数: '+rtZ.toFixed(2);
   document.getElementById('m-ratio-sig').style.color=Math.abs(rtZ)>1.5?'var(--red)':'var(--muted)';
+
+  // 更新危机面板实时数值
+  const crisisVix = document.getElementById('crisis-vix');
+  const crisisDvol = document.getElementById('crisis-dvol');
+  const crisisBtc = document.getElementById('crisis-btc');
+  if(crisisVix) crisisVix.textContent = vx.toFixed(1);
+  if(crisisDvol) crisisDvol.textContent = dv.toFixed(1);
+  if(crisisBtc) crisisBtc.textContent = '$'+(data.btc[last]/1000).toFixed(1)+'k';
+
+  // 更新操作指示信号
+  const sigPb = document.getElementById('sig-playbook');
+  if(sigPb) {
+    if(vx < 28 && rt < 2.0) {
+      sigPb.textContent = '进攻信号触发! VIX<28 + 比率<2.0 → 做多BTC + 卖DVOL跨式';
+      sigPb.className = 'signal long';
+    } else if(vx > 40) {
+      sigPb.textContent = '极端恐慌 VIX>40 — 准备反手，等待首次日线收跌确认';
+      sigPb.className = 'signal short';
+    } else if(vx > 35) {
+      sigPb.textContent = 'VIX>35 — 可小仓位卖出VIX看涨，止损45';
+      sigPb.className = 'signal short';
+    } else {
+      sigPb.textContent = '等待中 — VIX '+vx.toFixed(1)+' / DVOL '+dv.toFixed(1)+' / 比率 '+rt.toFixed(2);
+      sigPb.className = 'signal neutral';
+    }
+  }
 }
 
 function destroyCharts(){ Object.values(chartInstances).forEach(c=>c.destroy()); chartInstances={}; }
@@ -791,7 +927,7 @@ function switchTab(name, btn) {
   btn.classList.add('active');
   if (name==='compare' && !compareInited) {
     compareInited = true;
-    setTimeout(()=>drawCompareCharts(currentEvent), 50);
+    setTimeout(()=>{updateRightPanelStats(); drawCompareCharts(currentEvent);}, 50);
   }
 }
 
@@ -816,13 +952,16 @@ function drawCompareCharts(eventKey) {
   ).join('');
   // 更新对比总结
   const sm = ev.summary;
-  const vixPctOfHist = (31.9 / parseFloat(sm.vixPeak) * 100).toFixed(0);
-  const dvolPctOfHist = (80 / parseFloat(sm.dvolPeak) * 100).toFixed(0);
+  const curVix = CURRENT_DAILY.vix[CURRENT_DAILY.vix.length-1];
+  const curDvol = CURRENT_DAILY.dvol[CURRENT_DAILY.dvol.length-1];
+  const curSpread = (curDvol - curVix).toFixed(1);
+  const vixPctOfHist = (curVix / parseFloat(sm.vixPeak) * 100).toFixed(0);
+  const dvolPctOfHist = (curDvol / parseFloat(sm.dvolPeak) * 100).toFixed(0);
   document.getElementById('compareSummary').innerHTML = `<h3 style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:8px;">对比总结</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;">
       <div style="text-align:center;"><div style="font-size:11px;color:var(--muted);font-weight:600;">指标</div><div style="font-size:12px;margin-top:6px;font-weight:700;">VIX 峰值</div><div style="font-size:12px;margin-top:4px;font-weight:700;">DVOL 峰值</div><div style="font-size:12px;margin-top:4px;font-weight:700;">价差峰值</div><div style="font-size:12px;margin-top:4px;font-weight:700;">持续时间</div></div>
       <div style="text-align:center;"><div style="font-size:11px;color:var(--red);font-weight:600;">${sm.name}</div><div style="font-size:12px;margin-top:6px;font-weight:800;color:var(--red);">${sm.vixPeak}</div><div style="font-size:12px;margin-top:4px;font-weight:800;color:var(--red);">${sm.dvolPeak}</div><div style="font-size:12px;margin-top:4px;">${sm.spreadPeak}</div><div style="font-size:12px;margin-top:4px;">${sm.duration}</div></div>
-      <div style="text-align:center;"><div style="font-size:11px;color:var(--accent);font-weight:600;">2026.2-3 当前</div><div style="font-size:12px;margin-top:6px;font-weight:800;color:var(--orange);">31.9 (进行中)</div><div style="font-size:12px;margin-top:4px;font-weight:800;color:var(--orange);">80 (进行中)</div><div style="font-size:12px;margin-top:4px;">48.1</div><div style="font-size:12px;margin-top:4px;">~18天 (攀升中)</div></div>
+      <div style="text-align:center;"><div style="font-size:11px;color:var(--accent);font-weight:600;">2026.2-3 当前</div><div style="font-size:12px;margin-top:6px;font-weight:800;color:var(--orange);">${curVix} (进行中)</div><div style="font-size:12px;margin-top:4px;font-weight:800;color:var(--orange);">${curDvol} (进行中)</div><div style="font-size:12px;margin-top:4px;">${curSpread}</div><div style="font-size:12px;margin-top:4px;">~${CURRENT_DAILY.labels.length}天 (攀升中)</div></div>
       <div style="text-align:center;"><div style="font-size:11px;color:var(--muted);font-weight:600;">判断</div><div style="font-size:12px;margin-top:6px;color:var(--orange);font-weight:600;">约为峰值的${vixPctOfHist}%</div><div style="font-size:12px;margin-top:4px;color:var(--orange);font-weight:600;">约为峰值的${dvolPctOfHist}%</div><div style="font-size:12px;margin-top:4px;color:var(--orange);font-weight:600;">关注是否接近上轮</div><div style="font-size:12px;margin-top:4px;color:var(--orange);font-weight:600;">关注何时见顶</div></div>
     </div>`;
 
@@ -1036,8 +1175,388 @@ function drawCompareCharts(eventKey) {
 
 }
 
-// Init
-regenerate();
+// ========== 数据服务 ==========
+const DataService = {
+  lastBTC: null,
+  lastDVOL: null,
+
+  async fetchBTCPrice() {
+    try {
+      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+      const d = await r.json();
+      if (d.bitcoin) {
+        this.lastBTC = { price: d.bitcoin.usd, change24h: d.bitcoin.usd_24h_change };
+        return this.lastBTC;
+      }
+    } catch(e) { console.warn('BTC API 失败:', e); }
+    return null;
+  },
+
+  async fetchDVOL() {
+    try {
+      const end = Date.now();
+      const start = end - 2 * 24 * 3600 * 1000;
+      const r = await fetch(`https://www.deribit.com/api/v2/public/get_volatility_index_data?currency=BTC&resolution=86400&start_timestamp=${start}&end_timestamp=${end}`);
+      const d = await r.json();
+      if (d.result && d.result.data && d.result.data.length) {
+        const latest = d.result.data[d.result.data.length - 1];
+        // data format: [timestamp, open, high, low, close]
+        this.lastDVOL = { value: +latest[4].toFixed(1), timestamp: latest[0] };
+        return this.lastDVOL;
+      }
+    } catch(e) { console.warn('DVOL API 失败:', e); }
+    return null;
+  },
+
+  async fetchDVOLHistory(days) {
+    try {
+      const end = Date.now();
+      const start = end - days * 24 * 3600 * 1000;
+      const r = await fetch(`https://www.deribit.com/api/v2/public/get_volatility_index_data?currency=BTC&resolution=86400&start_timestamp=${start}&end_timestamp=${end}`);
+      const d = await r.json();
+      if (d.result && d.result.data && d.result.data.length) {
+        return d.result.data.map(p => ({
+          d: new Date(p[0]).toISOString().slice(0,10),
+          dvol: +p[4].toFixed(1)
+        }));
+      }
+    } catch(e) { console.warn('DVOL历史 API 失败:', e); }
+    return null;
+  },
+
+  async fetchBTCHistory(days) {
+    try {
+      const r = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${days}&interval=daily`);
+      const d = await r.json();
+      if (d.prices) {
+        return d.prices.map(p => ({
+          d: new Date(p[0]).toISOString().slice(0,10),
+          btc: Math.round(p[1])
+        }));
+      }
+    } catch(e) { console.warn('BTC历史 API 失败:', e); }
+    return null;
+  },
+
+  // 用API数据更新硬编码的历史数据末尾
+  updateLatestData(btcData, dvolData) {
+    if (btcData) {
+      const last = BTC_HISTORY[BTC_HISTORY.length - 1];
+      const today = new Date().toISOString().slice(0,10);
+      if (last.d === today) {
+        last.btc = btcData.price;
+      } else {
+        BTC_HISTORY.push({d: today, btc: Math.round(btcData.price)});
+      }
+      // 更新CURRENT_DAILY末尾
+      CURRENT_DAILY.btc[CURRENT_DAILY.btc.length-1] = Math.round(btcData.price);
+      const lastOHLC = CURRENT_DAILY.btcOHLC[CURRENT_DAILY.btcOHLC.length-1];
+      lastOHLC.c = Math.round(btcData.price);
+      lastOHLC.l = Math.min(lastOHLC.l, Math.round(btcData.price));
+      lastOHLC.h = Math.max(lastOHLC.h, Math.round(btcData.price));
+    }
+    if (dvolData) {
+      const last = DVOL_HISTORY[DVOL_HISTORY.length - 1];
+      const today = new Date().toISOString().slice(0,10);
+      if (last.d === today) {
+        last.dvol = dvolData.value;
+      } else {
+        DVOL_HISTORY.push({d: today, dvol: dvolData.value});
+      }
+      CURRENT_DAILY.dvol[CURRENT_DAILY.dvol.length-1] = dvolData.value;
+    }
+  }
+};
+
+// 更新右侧对比面板的统计数据（动态）
+function updateRightPanelStats() {
+  const td = CURRENT_DAILY;
+  const vixNow = td.vix[td.vix.length-1];
+  const vixStart = td.vix[0];
+  const dvolNow = td.dvol[td.dvol.length-1];
+  const dvolStart = td.dvol[0];
+  const vixPct = ((vixNow - vixStart) / vixStart * 100).toFixed(0);
+  const rightCard = document.querySelector('.compare-card.right');
+  if (!rightCard) return;
+  const statsDiv = rightCard.querySelector('.zoom-stats');
+  if (statsDiv) {
+    statsDiv.innerHTML = `
+      <div class="zoom-stat"><div class="zs-label">VIX 当前</div><div class="zs-val" style="color:var(--purple);">${vixNow}</div></div>
+      <div class="zoom-stat"><div class="zs-label">VIX 起点</div><div class="zs-val" style="color:var(--purple);">${vixStart}</div></div>
+      <div class="zoom-stat"><div class="zs-label">VIX 涨幅</div><div class="zs-val" style="color:var(--red);">+${vixPct}%</div></div>
+      <div class="zoom-stat"><div class="zs-label">DVOL 当前</div><div class="zs-val" style="color:var(--orange);">${dvolNow}</div></div>
+      <div class="zoom-stat"><div class="zs-label">DVOL 起点</div><div class="zs-val" style="color:var(--orange);">${dvolStart}</div></div>
+      <div class="zoom-stat"><div class="zs-label">持续</div><div class="zs-val" style="color:var(--red);">~${td.labels.length}天(进行中)</div></div>
+    `;
+  }
+}
+
+// 状态提示
+function showStatus(msg, isError) {
+  const header = document.getElementById('headerSub');
+  if (header) {
+    const orig = header.textContent;
+    header.textContent = msg;
+    header.style.color = isError ? 'var(--red)' : 'var(--green)';
+    setTimeout(() => { header.textContent = orig; header.style.color = ''; }, 3000);
+  }
+}
+
+// 主初始化（异步）
+async function init() {
+  // 先用硬编码数据立即渲染
+  regenerate();
+
+  // 异步拉取实时数据
+  const [btcData, dvolData] = await Promise.all([
+    DataService.fetchBTCPrice(),
+    DataService.fetchDVOL()
+  ]);
+
+  let updated = false;
+  if (btcData) {
+    DataService.updateLatestData(btcData, null);
+    updated = true;
+  }
+  if (dvolData) {
+    DataService.updateLatestData(null, dvolData);
+    updated = true;
+  }
+  if (updated) {
+    regenerate();
+    if (compareInited) drawCompareCharts(currentEvent);
+    updateRightPanelStats();
+    showStatus('数据已从 API 刷新 (' + new Date().toLocaleTimeString('zh-CN') + ')');
+  }
+}
+
+// 定时刷新（每60秒）
+setInterval(async () => {
+  const [btcData, dvolData] = await Promise.all([
+    DataService.fetchBTCPrice(),
+    DataService.fetchDVOL()
+  ]);
+  let updated = false;
+  if (btcData) { DataService.updateLatestData(btcData, null); updated = true; }
+  if (dvolData) { DataService.updateLatestData(null, dvolData); updated = true; }
+  if (updated) {
+    regenerate();
+    if (compareInited) drawCompareCharts(currentEvent);
+    updateRightPanelStats();
+  }
+}, 60000);
+
+// ========== 危机复盘图表数据 ==========
+const CRISIS_DATA = {
+  yen2024: {
+    name: '2024.8 日元平仓',
+    color: '#ef4444',
+    // Day -3 到 Day +18（以 8/5 为 Day 0），共 22 天
+    labels: ['D-3','D-2','D-1','D0','D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','D17','D18'],
+    vix:  [16.4,23.4,23.4,38.6,27.7,27.7,20.4,20.4,20.4,15.0,15.0,15.0,15.0,15.0,15.0,22.4,22.4,17.1,17.1,17.1,16.7,16.7],
+    dvol: [62,65,65,90,78,78,60,60,60,52,52,52,52,52,52,62,62,53,53,53,48,48],
+    btc:  [64500,61500,61500,49500,55000,55000,58500,58500,58500,59000,59000,59000,59000,59000,59000,53500,53500,58000,58000,58000,63500,63500],
+    peakDay: 3, peakLabel: 'VIX 38.6\n恐慌顶点', sellDay: 3, sellLabel: '做空 VIX\n买 BTC call', exitDay: 6, exitLabel: '平仓获利'
+  },
+  tariff2025: {
+    name: '2025.4 关税战',
+    color: '#f97316',
+    // Day -2 到 Day +20（以 4/3 关税公布为 Day 0）
+    labels: ['D-2','D-1','D0','D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','D17','D18','D19'],
+    vix:  [22.3,21.5,30.0,45.3,46.9,52.3,33.6,40.7,37.6,30.1,29.5,28.2,32.6,31.5,34.1,33.8,30.2,28.4,26.5,25.8,25.2,24.7],
+    dvol: [58,60,75,95,105,110,82,90,85,72,70,68,78,75,77,75,70,65,62,60,59,58],
+    btc:  [84000,83500,80000,76500,75200,74800,79500,77000,78000,80500,81000,81500,79500,80000,79000,79500,80500,81500,82000,82500,83000,83500],
+    peakDay: 5, peakLabel: 'VIX 52.3\n峰值', sellDay: 6, sellLabel: '90天暂缓\n反手做多', exitDay: 18, exitLabel: '恢复'
+  },
+  iran2026: {
+    name: '2026.2 美伊冲突',
+    color: '#2563eb',
+    // Day -1 到 Day +9（以 2/28 为 Day 0）
+    labels: ['D-1','D0','D1','D2','D3','D4','D5','D6','D7','D8','D9'],
+    vix:  [22.4,22.8,22.8,24.5,27.0,29.3,30.8,31.9,31.9,31.9,31.9],
+    dvol: [62,62,62,66,70,74,78,80,80,80,80],
+    btc:  [78000,75000,75000,73500,71000,70000,69200,68500,67600,67600,67600],
+    peakDay: null, peakLabel: '', sellDay: null, sellLabel: '', exitDay: null, exitLabel: ''
+  }
+};
+
+let crisisChartInstances = {};
+let crisisChartsInited = false;
+
+function destroyCrisisCharts() {
+  Object.values(crisisChartInstances).forEach(c => c.destroy());
+  crisisChartInstances = {};
+}
+
+function drawCrisisCharts() {
+  if (crisisChartsInited) destroyCrisisCharts();
+  crisisChartsInited = true;
+  const G = 'rgba(224,228,232,0.5)', T = '#6b7280';
+
+  // ==== 叠加对比图：VIX ====
+  const maxLen = Math.max(...Object.values(CRISIS_DATA).map(c => c.labels.length));
+  const alignedLabels = Array.from({length: maxLen}, (_, i) => 'D' + (i - 3));
+
+  // 标准化到百分比变化（以 Day 0 为基准 = 0%）
+  function toPctChange(arr, baseIdx) {
+    const base = arr[baseIdx] || arr[0];
+    return arr.map(v => +((v - base) / base * 100).toFixed(1));
+  }
+
+  // 各危机的 Day 0 索引
+  const yenBase = 3; // D-3 开始, D0 在 index 3
+  const tariffBase = 2; // D-2 开始, D0 在 index 2
+  const iranBase = 1; // D-1 开始, D0 在 index 1
+
+  // VIX 叠加（绝对值）
+  function padRight(arr, len) { return [...arr, ...Array(len - arr.length).fill(null)]; }
+
+  const crisisVixAnnotations = {};
+  // 关税战峰值标注
+  crisisVixAnnotations.tariffPeak = {type:'point',xValue:'D3',yValue:52.3,backgroundColor:'rgba(249,115,22,.2)',borderColor:'#f97316',borderWidth:2,radius:8,
+    label:{display:true,content:'关税战 VIX 52.3',position:'top',color:'#f97316',font:{size:10,weight:'bold'},backgroundColor:'rgba(255,255,255,.9)',padding:3}};
+  crisisVixAnnotations.yenPeak = {type:'point',xValue:'D0',yValue:38.6,backgroundColor:'rgba(239,68,68,.2)',borderColor:'#ef4444',borderWidth:2,radius:8,
+    label:{display:true,content:'日元 VIX 38.6',position:'top',color:'#ef4444',font:{size:10,weight:'bold'},backgroundColor:'rgba(255,255,255,.9)',padding:3,yAdjust:-16}};
+  crisisVixAnnotations.day0 = {type:'line',xMin:'D0',xMax:'D0',borderColor:'rgba(0,0,0,.2)',borderWidth:1.5,borderDash:[4,4],
+    label:{display:true,content:'事件爆发 Day 0',position:'start',color:'#6b7280',font:{size:9},backgroundColor:'rgba(255,255,255,.9)',padding:3}};
+
+  crisisChartInstances.vixOverlay = new Chart(document.getElementById('chartCrisisVix'), {
+    type: 'line',
+    data: {
+      labels: alignedLabels,
+      datasets: [
+        {label: CRISIS_DATA.yen2024.name + ' VIX', data: padRight(CRISIS_DATA.yen2024.vix, maxLen), borderColor: CRISIS_DATA.yen2024.color, borderWidth: 2.5, pointRadius: 2, tension: .3, fill: false},
+        {label: CRISIS_DATA.tariff2025.name + ' VIX', data: padRight(CRISIS_DATA.tariff2025.vix, maxLen), borderColor: CRISIS_DATA.tariff2025.color, borderWidth: 2.5, pointRadius: 2, tension: .3, fill: false},
+        {label: CRISIS_DATA.iran2026.name + ' VIX', data: padRight(CRISIS_DATA.iran2026.vix, maxLen), borderColor: CRISIS_DATA.iran2026.color, borderWidth: 2.5, pointRadius: 3, tension: .3, fill: false, borderDash:[6,3]}
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true, aspectRatio: 2.8,
+      interaction: {mode: 'index', intersect: false},
+      scales: {
+        x: {grid: {color: G}, ticks: {color: T, font: {size: 10}}},
+        y: {grid: {color: G}, ticks: {color: T}, title: {display: true, text: 'VIX', color: '#7c3aed'}}
+      },
+      plugins: {
+        legend: {labels: {color: T, font: {size: 11}, usePointStyle: true}},
+        annotation: {annotations: crisisVixAnnotations}
+      }
+    }
+  });
+
+  // ==== DVOL 叠加 ====
+  crisisChartInstances.dvolOverlay = new Chart(document.getElementById('chartCrisisDvol'), {
+    type: 'line',
+    data: {
+      labels: alignedLabels,
+      datasets: [
+        {label: '日元', data: padRight(CRISIS_DATA.yen2024.dvol, maxLen), borderColor: '#ef4444', borderWidth: 2, pointRadius: 2, tension: .3, fill: false},
+        {label: '关税', data: padRight(CRISIS_DATA.tariff2025.dvol, maxLen), borderColor: '#f97316', borderWidth: 2, pointRadius: 2, tension: .3, fill: false},
+        {label: '美伊', data: padRight(CRISIS_DATA.iran2026.dvol, maxLen), borderColor: '#2563eb', borderWidth: 2, pointRadius: 3, tension: .3, fill: false, borderDash:[6,3]}
+      ]
+    },
+    options: {
+      responsive: true, interaction: {mode:'index',intersect:false},
+      scales: {
+        x: {grid: {color: G}, ticks: {color: T, font: {size: 9}}},
+        y: {grid: {color: G}, ticks: {color: T}, title: {display: true, text: 'DVOL', color: '#b45309'}}
+      },
+      plugins: {legend: {labels: {color: T, font: {size: 10}, usePointStyle: true}}}
+    }
+  });
+
+  // ==== BTC 涨跌幅叠加 ====
+  const yenBtcPct = toPctChange(CRISIS_DATA.yen2024.btc, yenBase);
+  const tariffBtcPct = toPctChange(CRISIS_DATA.tariff2025.btc, tariffBase);
+  const iranBtcPct = toPctChange(CRISIS_DATA.iran2026.btc, iranBase);
+
+  crisisChartInstances.btcOverlay = new Chart(document.getElementById('chartCrisisBtc'), {
+    type: 'line',
+    data: {
+      labels: alignedLabels,
+      datasets: [
+        {label: '日元', data: padRight(yenBtcPct, maxLen), borderColor: '#ef4444', borderWidth: 2, pointRadius: 2, tension: .3, fill: false},
+        {label: '关税', data: padRight(tariffBtcPct, maxLen), borderColor: '#f97316', borderWidth: 2, pointRadius: 2, tension: .3, fill: false},
+        {label: '美伊', data: padRight(iranBtcPct, maxLen), borderColor: '#2563eb', borderWidth: 2, pointRadius: 3, tension: .3, fill: false, borderDash:[6,3]}
+      ]
+    },
+    options: {
+      responsive: true, interaction: {mode:'index',intersect:false},
+      scales: {
+        x: {grid: {color: G}, ticks: {color: T, font: {size: 9}}},
+        y: {grid: {color: G}, ticks: {color: T, callback: v => v+'%'}, title: {display: true, text: 'BTC 涨跌幅 %', color: T}}
+      },
+      plugins: {
+        legend: {labels: {color: T, font: {size: 10}, usePointStyle: true}},
+        annotation: {annotations: {
+          zero: {type:'line',yMin:0,yMax:0,borderColor:'rgba(0,0,0,.15)',borderWidth:1,borderDash:[5,5]}
+        }}
+      }
+    }
+  });
+
+  // ==== 每个危机单独小图（VIX+DVOL 双轴 + 操作标注）====
+  function drawMiniCrisis(canvasId, crisis) {
+    const annotations = {};
+    // Day 0 线
+    const d0Idx = crisis.labels.indexOf('D0');
+    if(d0Idx >= 0) annotations.d0 = {type:'line',xMin:'D0',xMax:'D0',borderColor:'rgba(0,0,0,.2)',borderWidth:1,borderDash:[3,3]};
+
+    if(crisis.peakDay !== null) {
+      const pk = crisis.labels[crisis.peakDay] || 'D'+crisis.peakDay;
+      annotations.peak = {type:'point',xValue:pk,yValue:crisis.vix[crisis.peakDay],backgroundColor:'rgba(220,38,38,.15)',borderColor:'#dc2626',borderWidth:2,radius:7,
+        label:{display:true,content:crisis.peakLabel.replace('\n',' '),position:'top',color:'#dc2626',font:{size:8,weight:'bold'},backgroundColor:'rgba(255,255,255,.9)',padding:2,yAdjust:-8}};
+    }
+    if(crisis.sellDay !== null) {
+      const sk = crisis.labels[crisis.sellDay] || 'D'+crisis.sellDay;
+      annotations.sell = {type:'point',xValue:sk,yValue:crisis.vix[crisis.sellDay],backgroundColor:'rgba(22,163,74,.15)',borderColor:'#16a34a',borderWidth:2,radius:7,
+        label:{display:true,content:crisis.sellLabel.replace('\n',' '),position:'bottom',color:'#16a34a',font:{size:8,weight:'bold'},backgroundColor:'rgba(255,255,255,.9)',padding:2,yAdjust:8}};
+    }
+    if(crisis.exitDay !== null && crisis.exitDay < crisis.labels.length) {
+      const ek = crisis.labels[crisis.exitDay] || 'D'+crisis.exitDay;
+      annotations.exit = {type:'line',xMin:ek,xMax:ek,borderColor:'rgba(22,163,74,.4)',borderWidth:1.5,borderDash:[4,4],
+        label:{display:true,content:crisis.exitLabel,position:'start',color:'#16a34a',font:{size:8,weight:'bold'},backgroundColor:'rgba(255,255,255,.9)',padding:2}};
+    }
+
+    crisisChartInstances['mini_'+canvasId] = new Chart(document.getElementById(canvasId), {
+      type: 'line',
+      data: {
+        labels: crisis.labels,
+        datasets: [
+          {label:'VIX', data:crisis.vix, borderColor:'#7c3aed', backgroundColor:'rgba(124,58,237,.06)', fill:true, borderWidth:2, pointRadius:2, tension:.3, yAxisID:'yVix'},
+          {label:'DVOL', data:crisis.dvol, borderColor:'#b45309', backgroundColor:'rgba(180,83,9,.06)', fill:true, borderWidth:2, pointRadius:2, tension:.3, yAxisID:'yDvol'}
+        ]
+      },
+      options: {
+        responsive: true, interaction: {mode:'index',intersect:false},
+        scales: {
+          x: {grid: {color: 'rgba(224,228,232,0.3)'}, ticks: {color: T, font: {size: 8}}},
+          yVix: {position:'left', grid: {color:'rgba(224,228,232,0.3)'}, ticks: {color:'#7c3aed', font:{size:8}}, title:{display:false}},
+          yDvol: {position:'right', grid: {drawOnChartArea:false}, ticks: {color:'#b45309', font:{size:8}}, title:{display:false}}
+        },
+        plugins: {
+          legend: {labels: {color: T, font: {size: 9}, usePointStyle:true, boxWidth:6}},
+          annotation: {annotations}
+        }
+      }
+    });
+  }
+
+  drawMiniCrisis('chartCrisis2024', CRISIS_DATA.yen2024);
+  drawMiniCrisis('chartCrisis2025', CRISIS_DATA.tariff2025);
+  drawMiniCrisis('chartCrisis2026', CRISIS_DATA.iran2026);
+}
+
+// 切换到策略 Tab 时绘制危机图表
+const origSwitchTab = switchTab;
+switchTab = function(name, btn) {
+  origSwitchTab(name, btn);
+  if (name === 'strategy' && !crisisChartsInited) {
+    setTimeout(drawCrisisCharts, 50);
+  }
+};
+
+init();
 </script>
 </body>
 </html>
