@@ -495,7 +495,7 @@ const KEY_EVENTS = [
   {d:'2025-04-04', label:'对等关税生效', color:'#dc2626'},
   {d:'2025-04-08', label:'贸易战升级 VIX>52', color:'#dc2626'},
   {d:'2025-04-09', label:'90天关税暂缓', color:'#16a34a'},
-  {d:'2026-02-28', label:'哈梅内伊遇袭·油价飙升', color:'#dc2626'},
+  {d:'2026-02-28', label:'2.28 哈梅内伊遇袭·油价飙升', color:'#dc2626'},
   {d:'2026-03-09', label:'今天 VIX 31.9', color:'#2563eb'}
 ];
 
@@ -735,7 +735,8 @@ function drawCharts(data) {
             },
             labelTextColor(ctx){return ctx.parsed.y>=btcFirst?'#4ade80':'#f87171';}
           }
-        }
+        },
+        annotation:{annotations:ea}
       }
     }
   });
