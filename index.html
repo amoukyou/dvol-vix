@@ -268,7 +268,9 @@
         <div class="zoom-stat"><div class="zs-label">DVOL 起点</div><div class="zs-val" style="color:var(--orange);">60</div></div>
         <div class="zoom-stat"><div class="zs-label">恢复用时</div><div class="zs-val" style="color:var(--green);">~3周</div></div>
       </div>
-      <canvas id="chartZoomWar" height="160"></canvas>
+      <canvas id="chartZoomWar" height="130"></canvas>
+      <h3 style="margin-top:14px;font-size:12px;color:#0ea5e9;font-weight:600;">BTC 价格走势</h3>
+      <canvas id="chartBtcWar" height="70"></canvas>
     </div>
     <div class="compare-card right">
       <h3 style="color:var(--accent);">2026年3月9日 今日日内走势 (逐小时)</h3>
@@ -280,7 +282,9 @@
         <div class="zoom-stat"><div class="zs-label">DVOL 日高</div><div class="zs-val" style="color:var(--red);">83</div></div>
         <div class="zoom-stat"><div class="zs-label">趋势</div><div class="zs-val" style="color:var(--red);">连涨5日</div></div>
       </div>
-      <canvas id="chartZoomToday" height="160"></canvas>
+      <canvas id="chartZoomToday" height="130"></canvas>
+      <h3 style="margin-top:14px;font-size:12px;color:#0ea5e9;font-weight:600;">BTC 价格走势</h3>
+      <canvas id="chartBtcToday" height="70"></canvas>
     </div>
   </div>
   <div style="margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04);">
@@ -683,7 +687,7 @@ function setRange(days,btn) {
 function regenerate(){ const data=generateData(currentDays); updateMetrics(data); drawCharts(data); }
 
 // ========== Tab 切换 ==========
-let zoomChartToday=null, zoomChartWar=null, compareDrawn=false;
+let zoomChartToday=null, zoomChartWar=null, btcChartWar=null, btcChartToday=null, compareDrawn=false;
 
 function switchTab(name, btn) {
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -699,6 +703,8 @@ function switchTab(name, btn) {
 function drawCompareCharts() {
   if(zoomChartWar) zoomChartWar.destroy();
   if(zoomChartToday) zoomChartToday.destroy();
+  if(btcChartWar) btcChartWar.destroy();
+  if(btcChartToday) btcChartToday.destroy();
 
   // 左：关税战
   const wd = TRADEWAR_DAILY;
@@ -716,15 +722,13 @@ function drawCompareCharts() {
     type:'line',
     data:{labels:wd.labels,datasets:[
       {label:'DVOL',data:wd.dvol,borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.08)',fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#b45309',tension:.3,yAxisID:'yDvol'},
-      {label:'VIX',data:wd.vix,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.08)',fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#7c3aed',tension:.3,yAxisID:'yVix'},
-      {label:'BTC ($)',data:wd.btc,borderColor:'#0ea5e9',borderWidth:2,borderDash:[6,3],pointRadius:3,pointBackgroundColor:'#0ea5e9',tension:.3,fill:false,yAxisID:'yBtc'}
+      {label:'VIX',data:wd.vix,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.08)',fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#7c3aed',tension:.3,yAxisID:'yVix'}
     ]},
     options:{responsive:true,interaction:{mode:'index',intersect:false},
       scales:{
         x:{grid:{color:G},ticks:{color:T,font:{size:10,weight:'bold'}}},
         yVix:{position:'left',grid:{color:G},ticks:{color:'#7c3aed',font:{size:9}},title:{display:true,text:'VIX',color:'#7c3aed'},min:15,max:60},
-        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309',font:{size:9}},title:{display:true,text:'DVOL',color:'#b45309'},min:40,max:120},
-        yBtc:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#0ea5e9',font:{size:9},callback:v=>'$'+(v/1000).toFixed(0)+'k'},title:{display:true,text:'BTC',color:'#0ea5e9'},offset:true}
+        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309',font:{size:9}},title:{display:true,text:'DVOL',color:'#b45309'},min:40,max:120}
       },
       plugins:{legend:{labels:{color:T,font:{size:11}}},annotation:{annotations:wa}}
     }
@@ -736,15 +740,13 @@ function drawCompareCharts() {
     type:'line',
     data:{labels:td.labels,datasets:[
       {label:'DVOL',data:td.dvol,borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.08)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#b45309',tension:.3,yAxisID:'yDvol'},
-      {label:'VIX',data:td.vix,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.08)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#7c3aed',tension:.3,yAxisID:'yVix'},
-      {label:'BTC ($)',data:td.btc,borderColor:'#0ea5e9',borderWidth:2,borderDash:[6,3],pointRadius:2,pointBackgroundColor:'#0ea5e9',tension:.3,fill:false,yAxisID:'yBtc'}
+      {label:'VIX',data:td.vix,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.08)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#7c3aed',tension:.3,yAxisID:'yVix'}
     ]},
     options:{responsive:true,interaction:{mode:'index',intersect:false},
       scales:{
         x:{grid:{color:G},ticks:{color:T,font:{size:10}}},
         yVix:{position:'left',grid:{color:G},ticks:{color:'#7c3aed',font:{size:9}},title:{display:true,text:'VIX',color:'#7c3aed'}},
-        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309',font:{size:9}},title:{display:true,text:'DVOL',color:'#b45309'}},
-        yBtc:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#0ea5e9',font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},title:{display:true,text:'BTC',color:'#0ea5e9'},offset:true}
+        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309',font:{size:9}},title:{display:true,text:'DVOL',color:'#b45309'}}
       },
       plugins:{legend:{labels:{color:T,font:{size:11}}},
         annotation:{annotations:{
@@ -756,6 +758,36 @@ function drawCompareCharts() {
             label:{display:true,content:'2025.4 VIX峰值 52.3',position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}}
         }}
       }
+    }
+  });
+
+  // BTC 价格子图 - 关税战
+  btcChartWar = new Chart(document.getElementById('chartBtcWar'),{
+    type:'line',
+    data:{labels:wd.labels,datasets:[
+      {label:'BTC 价格',data:wd.btc,borderColor:'#0ea5e9',backgroundColor:'rgba(14,165,233,.1)',fill:true,borderWidth:2,pointRadius:3,pointBackgroundColor:'#0ea5e9',tension:.3}
+    ]},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{grid:{color:G},ticks:{color:T,font:{size:9}}},
+        y:{grid:{color:G},ticks:{color:'#0ea5e9',font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},title:{display:true,text:'BTC ($)',color:'#0ea5e9'}}
+      },
+      plugins:{legend:{display:false}}
+    }
+  });
+
+  // BTC 价格子图 - 今日日内
+  btcChartToday = new Chart(document.getElementById('chartBtcToday'),{
+    type:'line',
+    data:{labels:td.labels,datasets:[
+      {label:'BTC 价格',data:td.btc,borderColor:'#0ea5e9',backgroundColor:'rgba(14,165,233,.1)',fill:true,borderWidth:2,pointRadius:2,pointBackgroundColor:'#0ea5e9',tension:.3}
+    ]},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{grid:{color:G},ticks:{color:T,font:{size:9}}},
+        y:{grid:{color:G},ticks:{color:'#0ea5e9',font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},title:{display:true,text:'BTC ($)',color:'#0ea5e9'}}
+      },
+      plugins:{legend:{display:false}}
     }
   });
 }
