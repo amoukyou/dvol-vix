@@ -475,7 +475,8 @@ const CURRENT_DAILY = {
     {o:99000,h:99200,l:97500,c:98200},{o:98200,h:98500,l:95800,c:96500},{o:96500,h:96800,l:90200,c:91500},{o:91500,h:92000,l:86800,c:88000},
     {o:88000,h:88500,l:83500,c:84500},{o:84500,h:85200,l:83000,c:84200},{o:84200,h:85500,l:83800,c:84500},
     {o:84500,h:86200,l:83500,c:85000},{o:85000,h:85500,l:81800,c:82500},{o:82500,h:83000,l:80200,c:81000},{o:81000,h:81500,l:79500,c:80200},{o:80200,h:80800,l:79200,c:79800},{o:79800,h:80200,l:78800,c:79500}
-  ]
+  ],
+  weekdays: ['周四','周五','周一','周二','周三','周四','周五','周一','周二','周三','周四','周五','周日']
 };
 
 const TRADEWAR_DAILY = {
@@ -494,7 +495,8 @@ const TRADEWAR_DAILY = {
     {o:79500,h:81000,l:79200,c:80500},{o:80500,h:82000,l:80200,c:81500},{o:81500,h:82500,l:81200,c:82000},{o:82000,h:83000,l:81800,c:82500},
     {o:82500,h:83500,l:82200,c:83000},{o:83000,h:84000,l:82800,c:83500}
   ],
-  events: {2:'关税公布',3:'关税生效',4:'中国报复',5:'VIX峰值52.3',6:'90天暂缓',9:'初步企稳'}
+  events: {2:'关税公布',3:'关税生效',4:'中国报复',5:'VIX峰值52.3',6:'90天暂缓',9:'初步企稳'},
+  weekdays: ['周二','周三','周四','周五','周一','周二','周三','周四','周五','周一','周二','周三','周四','周五','周一','周二','周三','周四','周五','周一','周二','周三']
 };
 
 const IRANOIL_DAILY = {
@@ -513,7 +515,8 @@ const IRANOIL_DAILY = {
     {o:88000,h:90200,l:87800,c:89500},{o:89500,h:91800,l:89200,c:91000},{o:91000,h:93200,l:90800,c:92500},{o:92500,h:94500,l:92200,c:94000},
     {o:94000,h:96000,l:93800,c:95500},{o:95500,h:96500,l:95200,c:96000},{o:96000,h:97200,l:95800,c:96800},{o:96800,h:98000,l:96500,c:97500}
   ],
-  events: {1:'伊朗扣押油轮',2:'美军空袭',3:'霍尔木兹海峡封锁',4:'油价$120+',6:'多方斡旋',9:'紧张缓和'}
+  events: {1:'伊朗扣押油轮',2:'美军空袭',3:'霍尔木兹海峡封锁',4:'油价$120+',6:'多方斡旋',9:'紧张缓和'},
+  weekdays: ['周二','周三','周四','周五','周六','周一','周二','周三','周四','周五','周一','周二','周三','周四','周五','周一','周二','周三','周四','周五']
 };
 
 // 历史事件元数据
@@ -930,7 +933,8 @@ function drawCompareCharts(eventKey) {
   const wa = {};
   if(wd.events) {
     Object.entries(wd.events).forEach(([idx,label])=>{
-      wa['we'+idx]={type:'line',xMin:wd.labels[idx],xMax:wd.labels[idx],
+      const xl = wd.weekdays ? wd.labels[idx]+' '+wd.weekdays[idx] : wd.labels[idx];
+      wa['we'+idx]={type:'line',xMin:xl,xMax:xl,
         borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
         label:{display:true,content:label,position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3,rotation:-45,yAdjust:-8}
       };
@@ -940,15 +944,19 @@ function drawCompareCharts(eventKey) {
   wa.peakLine={type:'line',yMin:vixPeak,yMax:vixPeak,yScaleID:'yVix',borderColor:'rgba(220,38,38,.3)',borderWidth:1,borderDash:[8,4],
     label:{display:true,content:'VIX 峰值 '+vixPeak,position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}};
 
+  // 组合日期+周几的标签
+  const wdLabels = wd.labels.map((l,i)=> wd.weekdays ? l+' '+wd.weekdays[i] : l);
+  const tdLabels = td.labels.map((l,i)=> td.weekdays ? l+' '+td.weekdays[i] : l);
+
   zoomChartHist = new Chart(document.getElementById('chartZoomHist'),{
     type:'line',
-    data:{labels:wd.labels,datasets:[
+    data:{labels:wdLabels,datasets:[
       {label:'DVOL',data:wd.dvol,borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.08)',fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#b45309',tension:.3,yAxisID:'yDvol'},
       {label:'VIX',data:wd.vix,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.08)',fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#7c3aed',tension:.3,yAxisID:'yVix'}
     ]},
     options:{responsive:true,interaction:{mode:'index',intersect:false},
       scales:{
-        x:{grid:{color:G},ticks:{color:T,font:{size:10,weight:'bold'}}},
+        x:{grid:{color:G},ticks:{color:T,font:{size:9,weight:'bold'}}},
         yVix:{position:'left',grid:{color:G},ticks:{color:'#7c3aed',font:{size:9}},title:{display:true,text:'VIX',color:'#7c3aed'},min:Math.min(...wd.vix)*0.8,max:vixPeak*1.1},
         yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309',font:{size:9}},title:{display:true,text:'DVOL',color:'#b45309'},min:Math.min(...wd.dvol)*0.8,max:Math.max(...wd.dvol)*1.1}
       },
@@ -961,7 +969,7 @@ function drawCompareCharts(eventKey) {
   const td = CURRENT_DAILY;
   zoomChartToday = new Chart(document.getElementById('chartZoomToday'),{
     type:'line',
-    data:{labels:td.labels,datasets:[
+    data:{labels:tdLabels,datasets:[
       {label:'DVOL',data:td.dvol,borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.08)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#b45309',tension:.3,yAxisID:'yDvol'},
       {label:'VIX',data:td.vix,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.08)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#7c3aed',tension:.3,yAxisID:'yVix'}
     ]},
@@ -973,7 +981,7 @@ function drawCompareCharts(eventKey) {
       },
       plugins:{legend:{labels:{color:T,font:{size:11}}},
         annotation:{annotations:{
-          tariff:{type:'line',xMin:'3/6',xMax:'3/6',borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
+          tariff:{type:'line',xMin:'3/6 周四',xMax:'3/6 周四',borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
             label:{display:true,content:'新关税冲击',position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3}},
           vixRef:{type:'line',yMin:vixPeak,yMax:vixPeak,yScaleID:'yVix',borderColor:'rgba(220,38,38,.25)',borderWidth:1,borderDash:[8,4],
             label:{display:true,content:sm.name+' VIX峰值 '+sm.vixPeak,position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}}
@@ -984,8 +992,8 @@ function drawCompareCharts(eventKey) {
   });
 
   // BTC K线图
-  btcChartHist = createCandleChart('chartBtcHist', wd.labels, wd.btcOHLC, wd.btcOHLC[0].o, ()=>zoomChartHist);
-  btcChartToday = createCandleChart('chartBtcToday', td.labels, td.btcOHLC, td.btcOHLC[0].o, ()=>zoomChartToday);
+  btcChartHist = createCandleChart('chartBtcHist', wdLabels, wd.btcOHLC, wd.btcOHLC[0].o, ()=>zoomChartHist);
+  btcChartToday = createCandleChart('chartBtcToday', tdLabels, td.btcOHLC, td.btcOHLC[0].o, ()=>zoomChartToday);
 
 }
 
