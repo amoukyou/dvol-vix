@@ -351,7 +351,7 @@
         <b>背景：</b>日央行意外加息 → 日元套利交易平仓 → 全球风险资产暴跌<br>
         <b>VIX：</b>15 → <b style="color:var(--red);">38.6</b>（+157%，8/5 当天）<br>
         <b>DVOL：</b>50 → <b style="color:var(--red);">90</b>（+80%）<br>
-        <b>BTC：</b>$61.5k → $49.5k（-20%）<br><br>
+        <b>BTC：</b>$64.5k → $49.5k（-23%）<br><br>
         <b style="color:var(--green);">正确操作：</b><br>
         ① 恐慌爆发当天（8/5），VIX 飙升到 38 → <b>立刻卖出 VIX 看涨期权（或做空 UVXY）</b>，因为纯流动性冲击消退极快<br>
         ② 同时 <b>买入 BTC 看涨期权（低行权价 call）</b>，DVOL 虽高但 BTC 超跌，实际波动率迅速回落 → 方向性获利<br>
@@ -368,7 +368,7 @@
         <b>背景：</b>对等关税 4/4 生效 → 中国报复 → 贸易战全面升级 → 4/9 宣布 90 天暂缓<br>
         <b>VIX：</b>21.5 → <b style="color:var(--red);">52.3</b>（+143%，持续约 1 周高位）<br>
         <b>DVOL：</b>60 → <b style="color:var(--red);">110</b>（+83%）<br>
-        <b>BTC：</b>$84k → $74.8k（-11%）<br><br>
+        <b>BTC：</b>$85k → $76.3k（-10%），随后暴涨至 $94k<br><br>
         <b style="color:var(--green);">正确操作：</b><br>
         ① 4/3 关税公布 → <b>第一时间买入 VIX 看涨 + 买入 BTC 看跌</b>（双边做多波动率），抢在恐慌传导之前<br>
         ② 4/8 VIX 突破 50 → <b>开始分批卖出 VIX 多头</b>，因为政策驱动型冲击有明确的"暂缓"预期<br>
@@ -386,7 +386,7 @@
         <b>背景：</b>2/28 哈梅内伊遇袭身亡 → 油价飙升突破 $110 → 伊朗报复威胁 → 全球避险<br>
         <b>VIX：</b>22.4 → <b style="color:var(--red);" id="crisis-vix">31.9</b>（+42%，仍在攀升）<br>
         <b>DVOL：</b>55 → <b style="color:var(--red);" id="crisis-dvol">80</b>（+45%，仍在攀升）<br>
-        <b>BTC：</b>$78k → <b style="color:var(--red);" id="crisis-btc">$67.6k</b>（-13%，连跌 10 天）<br><br>
+        <b>BTC：</b>$67.5k → <b style="color:var(--red);" id="crisis-btc">$67.9k</b>（震荡，未单边下跌）<br><br>
         <b style="color:var(--green);">复盘类似事件（2020 伊朗危机、2022 俄乌）：</b><br>
         ① 地缘冲突初期：VIX/DVOL 均快速飙升，但 <b>VIX 反应更快</b>（美股交易时间内即定价），DVOL 因 24/7 交易有滞后<br>
         ② 冲突如未进一步升级（无全面战争）：VIX 通常在 1-2 周见顶回落，DVOL 滞后 2-3 天跟随<br>
@@ -554,7 +554,9 @@ const DVOL_HISTORY = [
   {d:'2026-03-06',dvol:74},{d:'2026-03-07',dvol:78},{d:'2026-03-09',dvol:80}
 ];
 
+// BTC_HISTORY: 硬编码 fallback，页面加载后会被 CoinGecko API 实时数据替换
 const BTC_HISTORY = [
+  // 2024 (CoinGecko免费API只能拉365天，此段作为补充)
   {d:'2024-01-02',btc:45200},{d:'2024-01-15',btc:43000},{d:'2024-01-31',btc:42500},
   {d:'2024-02-15',btc:52000},{d:'2024-02-29',btc:62000},
   {d:'2024-03-15',btc:73500},{d:'2024-03-29',btc:69500},
@@ -570,23 +572,28 @@ const BTC_HISTORY = [
   {d:'2024-12-13',btc:101000},{d:'2024-12-18',btc:106000},{d:'2024-12-20',btc:97000},{d:'2024-12-31',btc:93500},
   {d:'2025-01-10',btc:94500},{d:'2025-01-17',btc:100000},{d:'2025-01-31',btc:104000},
   {d:'2025-02-14',btc:97500},{d:'2025-02-28',btc:84000},
-  {d:'2025-03-10',btc:80000},{d:'2025-03-14',btc:83000},{d:'2025-03-31',btc:82500},
-  {d:'2025-04-02',btc:84000},{d:'2025-04-03',btc:83500},{d:'2025-04-04',btc:80000},
-  {d:'2025-04-07',btc:75200},{d:'2025-04-08',btc:74800},{d:'2025-04-09',btc:79500},
-  {d:'2025-04-14',btc:80500},{d:'2025-04-22',btc:83000},{d:'2025-04-30',btc:85000},
-  {d:'2025-05-09',btc:96000},{d:'2025-05-15',btc:103000},{d:'2025-05-23',btc:108000},{d:'2025-05-30',btc:107000},
-  {d:'2025-06-13',btc:105000},{d:'2025-06-30',btc:109000},
-  {d:'2025-07-11',btc:103000},{d:'2025-07-25',btc:106000},{d:'2025-07-31',btc:104000},
-  {d:'2025-08-08',btc:100000},{d:'2025-08-22',btc:103000},{d:'2025-08-29',btc:101000},
-  {d:'2025-09-12',btc:98000},{d:'2025-09-26',btc:101000},{d:'2025-09-30',btc:99000},
-  {d:'2025-10-10',btc:96000},{d:'2025-10-24',btc:100000},{d:'2025-10-31',btc:98000},
-  {d:'2025-11-07',btc:102000},{d:'2025-11-21',btc:105000},{d:'2025-11-28',btc:107000},
-  {d:'2025-12-12',btc:104000},{d:'2025-12-19',btc:98000},{d:'2025-12-31',btc:100000},
-  {d:'2026-01-09',btc:102000},{d:'2026-01-17',btc:105000},{d:'2026-01-30',btc:103000},
-  {d:'2026-02-06',btc:100000},{d:'2026-02-14',btc:98000},{d:'2026-02-20',btc:96000},
-  {d:'2026-02-27',btc:78000},{d:'2026-02-28',btc:75000},
-  {d:'2026-03-02',btc:73500},{d:'2026-03-04',btc:71000},{d:'2026-03-05',btc:70000},
-  {d:'2026-03-06',btc:69200},{d:'2026-03-07',btc:68500},{d:'2026-03-09',btc:67600}
+  // 2025.3 起（以下为真实 CoinGecko 数据，API加载后会被覆盖）
+  {d:'2025-03-10',btc:80751},{d:'2025-03-16',btc:84392},{d:'2025-03-22',btc:84010},
+  {d:'2025-03-28',btc:87227},{d:'2025-04-03',btc:82526},{d:'2025-04-09',btc:76329},
+  {d:'2025-04-15',btc:84523},{d:'2025-04-21',btc:85073},{d:'2025-04-27',btc:94644},
+  {d:'2025-05-03',btc:96856},{d:'2025-05-09',btc:103076},{d:'2025-05-15',btc:103594},
+  {d:'2025-05-21',btc:106787},{d:'2025-05-27',btc:109378},{d:'2025-06-02',btc:105710},
+  {d:'2025-06-08',btc:105681},{d:'2025-06-14',btc:106046},{d:'2025-06-20',btc:104691},
+  {d:'2025-06-26',btc:107239},{d:'2025-07-02',btc:105613},{d:'2025-07-08',btc:108301},
+  {d:'2025-07-14',btc:119118},{d:'2025-07-20',btc:117902},{d:'2025-07-26',btc:117541},
+  {d:'2025-08-01',btc:115700},{d:'2025-08-07',btc:115022},{d:'2025-08-13',btc:120203},
+  {d:'2025-08-19',btc:116256},{d:'2025-08-25',btc:113400},{d:'2025-08-31',btc:108782},
+  {d:'2025-09-06',btc:110662},{d:'2025-09-12',btc:115503},{d:'2025-09-18',btc:116456},
+  {d:'2025-09-24',btc:112022},{d:'2025-09-30',btc:114309},{d:'2025-10-06',btc:123506},
+  {d:'2025-10-12',btc:110853},{d:'2025-10-18',btc:106444},{d:'2025-10-24',btc:110049},
+  {d:'2025-10-30',btc:110047},{d:'2025-11-05',btc:101635},{d:'2025-11-11',btc:105909},
+  {d:'2025-11-17',btc:94411},{d:'2025-11-23',btc:84683},{d:'2025-11-29',btc:90950},
+  {d:'2025-12-05',btc:92141},{d:'2025-12-11',btc:92005},{d:'2025-12-17',btc:87822},
+  {d:'2025-12-23',btc:88491},{d:'2025-12-29',btc:87823},{d:'2026-01-04',btc:90594},
+  {d:'2026-01-10',btc:90505},{d:'2026-01-16',btc:95585},{d:'2026-01-22',btc:89354},
+  {d:'2026-01-28',btc:89204},{d:'2026-02-03',btc:78768},{d:'2026-02-09',btc:70542},
+  {d:'2026-02-15',btc:69766},{d:'2026-02-21',btc:67970},{d:'2026-02-27',btc:67469},
+  {d:'2026-03-05',btc:72670},{d:'2026-03-09',btc:67895}
 ];
 
 const KEY_EVENTS = [
@@ -609,12 +616,12 @@ const CURRENT_DAILY = {
          22.8,24.5,27.0,29.3,30.8,31.9],
   dvol: [48,49,52,54,56,62,62,
          62,66,70,74,78,80],
-  btc: [96000,94500,88000,85000,82000,78000,75000,
-        73500,71000,70000,69200,68500,67600],
+  btc: [66919,67970,64578,64074,67947,67469,65884,
+        68864,68322,72670,70875,68148,67895],
   btcOHLC: [
-    {o:97000,h:97200,l:95200,c:96000},{o:96000,h:96200,l:93800,c:94500},{o:94500,h:94800,l:86500,c:88000},{o:88000,h:88500,l:83800,c:85000},
-    {o:85000,h:85500,l:81000,c:82000},{o:82000,h:82500,l:76500,c:78000},{o:78000,h:78500,l:73800,c:75000},
-    {o:75000,h:75500,l:72500,c:73500},{o:73500,h:73800,l:70200,c:71000},{o:71000,h:71500,l:69200,c:70000},{o:70000,h:70500,l:68500,c:69200},{o:69200,h:69500,l:67800,c:68500},{o:68500,h:68800,l:66800,c:67600}
+    {o:66456,h:67970,l:66400,c:66919},{o:66919,h:68200,l:67500,c:67970},{o:67585,h:67600,l:63800,c:64578},{o:64578,h:65200,l:63500,c:64074},
+    {o:64074,h:68200,l:63800,c:67947},{o:67947,h:68000,l:66800,c:67469},{o:67469,h:67500,l:64800,c:65884},
+    {o:67008,h:69500,l:67000,c:68864},{o:68864,h:69000,l:67500,c:68322},{o:68322,h:73200,l:68000,c:72670},{o:72670,h:72800,l:69800,c:70875},{o:70875,h:71000,l:67500,c:68148},{o:67271,h:68200,l:65800,c:67895}
   ],
   weekdays: ['周四','周五','周一','周二','周三','周四','周五','周一','周二','周三','周四','周五','周日']
 };
@@ -626,14 +633,14 @@ const TRADEWAR_DAILY = {
   vix:  [22.3,21.5,30.0,45.3,46.9,52.3,33.6,40.7,37.6,
          30.1,29.5,28.2,32.6,31.5,34.1,33.8,30.2,28.4,26.5,25.8,25.2,24.7],
   dvol: [58,60,75,95,105,110,82,90,85,72,70,68,78,75,77,75,70,65,62,60,59,58],
-  btc: [84000,83500,80000,76500,75200,74800,79500,77000,78000,80500,81000,81500,79500,80000,79000,79500,80500,81500,82000,82500,83000,83500],
+  btc: [82514,85238,82526,83164,78211,79179,76329,82622,79596,83601,84523,83656,84106,84931,85073,87452,93576,93605,93873,93809,95031,94256],
   btcOHLC: [
-    {o:84500,h:85200,l:83600,c:84000},{o:84000,h:84300,l:82800,c:83500},{o:83500,h:83800,l:78500,c:80000},{o:80000,h:80500,l:75200,c:76500},
-    {o:76500,h:77800,l:74500,c:75200},{o:75200,h:76000,l:73800,c:74800},{o:74800,h:80200,l:74200,c:79500},{o:79500,h:79800,l:76200,c:77000},
-    {o:77000,h:78500,l:76500,c:78000},{o:78000,h:81200,l:77800,c:80500},{o:80500,h:81500,l:80000,c:81000},{o:81000,h:82000,l:80800,c:81500},
-    {o:81500,h:81800,l:79000,c:79500},{o:79500,h:80500,l:79200,c:80000},{o:80000,h:80200,l:78500,c:79000},{o:79000,h:80000,l:78800,c:79500},
-    {o:79500,h:81000,l:79200,c:80500},{o:80500,h:82000,l:80200,c:81500},{o:81500,h:82500,l:81200,c:82000},{o:82000,h:83000,l:81800,c:82500},
-    {o:82500,h:83500,l:82200,c:83000},{o:83000,h:84000,l:82800,c:83500}
+    {o:82679,h:83500,l:82000,c:82514},{o:82514,h:85500,l:82500,c:85238},{o:85238,h:85300,l:81500,c:82526},{o:82526,h:83900,l:82000,c:83164},
+    {o:83596,h:83600,l:74500,c:78211},{o:78211,h:80200,l:77500,c:79179},{o:79179,h:83800,l:74200,c:76329},{o:76329,h:83500,l:76300,c:82622},
+    {o:82622,h:83500,l:79000,c:79596},{o:79596,h:84200,l:79500,c:83601},{o:83601,h:85000,l:83500,c:84523},{o:84523,h:84600,l:83000,c:83656},
+    {o:83656,h:84500,l:83500,c:84106},{o:84106,h:85200,l:84000,c:84931},{o:84931,h:85500,l:84800,c:85073},{o:85073,h:88000,l:85000,c:87452},
+    {o:87452,h:94500,l:87000,c:93576},{o:93576,h:94200,l:93000,c:93605},{o:93605,h:94800,l:93500,c:93873},{o:94773,h:94800,l:93000,c:93809},
+    {o:93809,h:95500,l:93500,c:95031},{o:95031,h:95200,l:93800,c:94256}
   ],
   events: {2:'关税公布',3:'关税生效',4:'中国报复',5:'VIX峰值52.3',6:'90天暂缓',9:'初步企稳'},
   weekdays: ['周二','周三','周四','周五','周一','周二','周三','周四','周五','周一','周二','周三','周四','周五','周一','周二','周三','周四','周五','周一','周二','周三']
@@ -643,10 +650,10 @@ const IRANOIL_DAILY = {
   labels: ['2/27','2/28','3/3','3/4','3/5','3/6','3/7','3/9'],
   vix:  [22.4,22.8,24.5,27.0,29.3,30.8,31.9,31.9],
   dvol: [55,62,66,70,74,78,80,80],
-  btc: [78000,75000,73500,71000,70000,69200,68500,67600],
+  btc: [67469,65884,68864,68322,72670,70875,68148,67895],
   btcOHLC: [
-    {o:82000,h:82500,l:76500,c:78000},{o:78000,h:78500,l:73800,c:75000},{o:75000,h:75500,l:72500,c:73500},{o:73500,h:73800,l:70200,c:71000},
-    {o:71000,h:71500,l:69200,c:70000},{o:70000,h:70500,l:68500,c:69200},{o:69200,h:69500,l:67800,c:68500},{o:68500,h:68800,l:66800,c:67600}
+    {o:67947,h:68000,l:66800,c:67469},{o:67469,h:67500,l:64800,c:65884},{o:67008,h:69500,l:67000,c:68864},{o:68864,h:69000,l:67500,c:68322},
+    {o:68322,h:73200,l:68000,c:72670},{o:72670,h:72800,l:69800,c:70875},{o:70875,h:71000,l:67500,c:68148},{o:67271,h:68200,l:65800,c:67895}
   ],
   events: {1:'哈梅内伊遇袭身亡',3:'油价突破$110',5:'伊朗报复威胁',7:'进行中'},
   weekdays: ['周四','周五','周一','周二','周三','周四','周五','周日']
@@ -1294,31 +1301,47 @@ const DataService = {
     return null;
   },
 
-  // 用API数据更新硬编码的历史数据末尾
+  // 用API历史数据完全替换硬编码数据
+  replaceHistoryData(btcHistory, dvolHistory) {
+    if (btcHistory && btcHistory.length > 30) {
+      // 完全替换 BTC_HISTORY（保留2024年CoinGecko免费API拉不到的部分）
+      const apiStart = btcHistory[0].d;
+      const oldData = BTC_HISTORY.filter(p => p.d < apiStart);
+      BTC_HISTORY.length = 0;
+      oldData.forEach(p => BTC_HISTORY.push(p));
+      btcHistory.forEach(p => BTC_HISTORY.push(p));
+      console.log('BTC历史已更新:', BTC_HISTORY.length, '个数据点');
+    }
+    if (dvolHistory && dvolHistory.length > 30) {
+      const apiStart = dvolHistory[0].d;
+      const oldData = DVOL_HISTORY.filter(p => p.d < apiStart);
+      DVOL_HISTORY.length = 0;
+      oldData.forEach(p => DVOL_HISTORY.push(p));
+      dvolHistory.forEach(p => DVOL_HISTORY.push(p));
+      console.log('DVOL历史已更新:', DVOL_HISTORY.length, '个数据点');
+    }
+  },
+
+  // 用API数据更新当前实时值
   updateLatestData(btcData, dvolData) {
     if (btcData) {
-      const last = BTC_HISTORY[BTC_HISTORY.length - 1];
       const today = new Date().toISOString().slice(0,10);
-      if (last.d === today) {
-        last.btc = btcData.price;
-      } else {
-        BTC_HISTORY.push({d: today, btc: Math.round(btcData.price)});
-      }
-      // 更新CURRENT_DAILY末尾
+      const last = BTC_HISTORY[BTC_HISTORY.length - 1];
+      if (last && last.d === today) { last.btc = Math.round(btcData.price); }
+      else { BTC_HISTORY.push({d: today, btc: Math.round(btcData.price)}); }
       CURRENT_DAILY.btc[CURRENT_DAILY.btc.length-1] = Math.round(btcData.price);
       const lastOHLC = CURRENT_DAILY.btcOHLC[CURRENT_DAILY.btcOHLC.length-1];
-      lastOHLC.c = Math.round(btcData.price);
-      lastOHLC.l = Math.min(lastOHLC.l, Math.round(btcData.price));
-      lastOHLC.h = Math.max(lastOHLC.h, Math.round(btcData.price));
+      if (lastOHLC) {
+        lastOHLC.c = Math.round(btcData.price);
+        lastOHLC.l = Math.min(lastOHLC.l, Math.round(btcData.price));
+        lastOHLC.h = Math.max(lastOHLC.h, Math.round(btcData.price));
+      }
     }
     if (dvolData) {
-      const last = DVOL_HISTORY[DVOL_HISTORY.length - 1];
       const today = new Date().toISOString().slice(0,10);
-      if (last.d === today) {
-        last.dvol = dvolData.value;
-      } else {
-        DVOL_HISTORY.push({d: today, dvol: dvolData.value});
-      }
+      const last = DVOL_HISTORY[DVOL_HISTORY.length - 1];
+      if (last && last.d === today) { last.dvol = dvolData.value; }
+      else { DVOL_HISTORY.push({d: today, dvol: dvolData.value}); }
       CURRENT_DAILY.dvol[CURRENT_DAILY.dvol.length-1] = dvolData.value;
     }
   }
@@ -1360,47 +1383,72 @@ function showStatus(msg, isError) {
 
 // 主初始化（异步）
 async function init() {
-  // 先用硬编码数据立即渲染
+  // 先用硬编码数据立即渲染（用户不用等API）
   regenerate();
 
-  // 异步拉取实时数据
-  const [btcData, dvolData] = await Promise.all([
+  // 第一步：拉取完整历史数据（BTC 365天 + DVOL 540天）替换硬编码
+  showStatus('正在从 API 加载历史数据...');
+  const [btcHistory, dvolHistory, btcPrice, dvolPrice] = await Promise.all([
+    DataService.fetchBTCHistory(365),
+    DataService.fetchDVOLHistory(540),
     DataService.fetchBTCPrice(),
     DataService.fetchDVOL()
   ]);
 
   let updated = false;
-  if (btcData) {
-    DataService.updateLatestData(btcData, null);
+
+  // 替换历史走势数据
+  if (btcHistory || dvolHistory) {
+    DataService.replaceHistoryData(btcHistory, dvolHistory);
     updated = true;
   }
-  if (dvolData) {
-    DataService.updateLatestData(null, dvolData);
-    updated = true;
-  }
+
+  // 更新实时价格
+  if (btcPrice) { DataService.updateLatestData(btcPrice, null); updated = true; }
+  if (dvolPrice) { DataService.updateLatestData(null, dvolPrice); updated = true; }
+
   if (updated) {
     regenerate();
     if (compareInited) drawCompareCharts(currentEvent);
     updateRightPanelStats();
-    showStatus('数据已从 API 刷新 (' + new Date().toLocaleTimeString('zh-CN') + ')');
+    const parts = [];
+    if (btcHistory) parts.push('BTC历史 ' + btcHistory.length + '天');
+    if (dvolHistory) parts.push('DVOL历史 ' + dvolHistory.length + '天');
+    if (btcPrice) parts.push('BTC $' + Math.round(btcPrice.price).toLocaleString());
+    if (dvolPrice) parts.push('DVOL ' + dvolPrice.value);
+    showStatus('API 数据已加载: ' + parts.join(' | ') + ' (' + new Date().toLocaleTimeString('zh-CN') + ')');
+  } else {
+    showStatus('API 加载失败，使用缓存数据', true);
   }
 }
 
-// 定时刷新（每60秒）
+// 定时刷新实时价格（每60秒）
 setInterval(async () => {
-  const [btcData, dvolData] = await Promise.all([
+  const [btcPrice, dvolPrice] = await Promise.all([
     DataService.fetchBTCPrice(),
     DataService.fetchDVOL()
   ]);
   let updated = false;
-  if (btcData) { DataService.updateLatestData(btcData, null); updated = true; }
-  if (dvolData) { DataService.updateLatestData(null, dvolData); updated = true; }
+  if (btcPrice) { DataService.updateLatestData(btcPrice, null); updated = true; }
+  if (dvolPrice) { DataService.updateLatestData(null, dvolPrice); updated = true; }
   if (updated) {
     regenerate();
     if (compareInited) drawCompareCharts(currentEvent);
     updateRightPanelStats();
   }
 }, 60000);
+
+// 每30分钟重新拉取一次历史数据（防止长时间开着页面数据过期）
+setInterval(async () => {
+  const [btcHistory, dvolHistory] = await Promise.all([
+    DataService.fetchBTCHistory(365),
+    DataService.fetchDVOLHistory(540)
+  ]);
+  if (btcHistory || dvolHistory) {
+    DataService.replaceHistoryData(btcHistory, dvolHistory);
+    regenerate();
+  }
+}, 1800000);
 
 // ========== 危机复盘图表数据 ==========
 const CRISIS_DATA = {
@@ -1411,7 +1459,7 @@ const CRISIS_DATA = {
     labels: ['D-3','D-2','D-1','D0','D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','D17','D18'],
     vix:  [16.4,23.4,23.4,38.6,27.7,27.7,20.4,20.4,20.4,15.0,15.0,15.0,15.0,15.0,15.0,22.4,22.4,17.1,17.1,17.1,16.7,16.7],
     dvol: [62,65,65,90,78,78,60,60,60,52,52,52,52,52,52,62,62,53,53,53,48,48],
-    btc:  [64500,61500,61500,49500,55000,55000,58500,58500,58500,59000,59000,59000,59000,59000,59000,53500,53500,58000,58000,58000,63500,63500],
+    btc:  [64500,61500,61500,49500,55000,55000,58500,58500,58500,59000,59000,59000,59000,59000,59000,53500,58000,58000,58000,58000,63500,63500],
     peakDay: 3, peakLabel: 'VIX 38.6\n恐慌顶点', sellDay: 3, sellLabel: '做空 VIX\n买 BTC call', exitDay: 6, exitLabel: '平仓获利'
   },
   tariff2025: {
@@ -1421,7 +1469,7 @@ const CRISIS_DATA = {
     labels: ['D-2','D-1','D0','D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16','D17','D18','D19'],
     vix:  [22.3,21.5,30.0,45.3,46.9,52.3,33.6,40.7,37.6,30.1,29.5,28.2,32.6,31.5,34.1,33.8,30.2,28.4,26.5,25.8,25.2,24.7],
     dvol: [58,60,75,95,105,110,82,90,85,72,70,68,78,75,77,75,70,65,62,60,59,58],
-    btc:  [84000,83500,80000,76500,75200,74800,79500,77000,78000,80500,81000,81500,79500,80000,79000,79500,80500,81500,82000,82500,83000,83500],
+    btc:  [82514,85238,82526,83164,78211,79179,76329,82622,79596,83601,84523,83656,84106,84931,85073,87452,93576,93605,93873,93809,95031,94256],
     peakDay: 5, peakLabel: 'VIX 52.3\n峰值', sellDay: 6, sellLabel: '90天暂缓\n反手做多', exitDay: 18, exitLabel: '恢复'
   },
   iran2026: {
@@ -1431,7 +1479,7 @@ const CRISIS_DATA = {
     labels: ['D-1','D0','D1','D2','D3','D4','D5','D6','D7','D8','D9'],
     vix:  [22.4,22.8,22.8,24.5,27.0,29.3,30.8,31.9,31.9,31.9,31.9],
     dvol: [62,62,62,66,70,74,78,80,80,80,80],
-    btc:  [78000,75000,75000,73500,71000,70000,69200,68500,67600,67600,67600],
+    btc:  [67469,65884,65884,68864,68322,72670,70875,68148,67895,67895,67895],
     peakDay: null, peakLabel: '', sellDay: null, sellLabel: '', exitDay: null, exitLabel: ''
   }
 };
