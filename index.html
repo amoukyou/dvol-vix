@@ -706,6 +706,54 @@ function drawCompareCharts() {
   if(btcChartWar) btcChartWar.destroy();
   if(btcChartToday) btcChartToday.destroy();
 
+  // 同步 hover 插件 — 上下图联动
+  let syncIdCounter = 0;
+  function syncPlugin(pairedChartFn) {
+    return {
+      id:'syncHover'+(syncIdCounter++),
+      afterEvent(chart, args) {
+        const evt = args.event;
+        const paired = pairedChartFn();
+        if (!paired) return;
+        if (evt.type === 'mousemove') {
+          const elements = chart.getElementsAtEventForMode(args.event, 'index', {intersect:false}, false);
+          if (elements.length) {
+            const idx = elements[0].index;
+            paired.tooltip.setActiveElements(
+              paired.data.datasets.map((_,di)=>({datasetIndex:di,index:idx})),
+              {x:0,y:0}
+            );
+            paired.setActiveElements(
+              paired.data.datasets.map((_,di)=>({datasetIndex:di,index:idx}))
+            );
+            paired.update('none');
+          }
+        } else if (evt.type === 'mouseout') {
+          paired.tooltip.setActiveElements([],{x:0,y:0});
+          paired.setActiveElements([]);
+          paired.update('none');
+        }
+      }
+    };
+  }
+
+  // BTC tooltip 带涨跌幅浮标
+  function btcTooltip(btcData) {
+    return {
+      tooltip:{
+        callbacks:{
+          label(ctx) {
+            const v = ctx.parsed.y;
+            const first = btcData[0];
+            const pct = ((v - first)/first*100).toFixed(2);
+            const sign = pct >= 0 ? '+' : '';
+            return `BTC $${(v/1000).toFixed(1)}k  (${sign}${pct}%)`;
+          }
+        }
+      }
+    };
+  }
+
   // 左：关税战
   const wd = TRADEWAR_DAILY;
   const wa = {};
@@ -731,7 +779,8 @@ function drawCompareCharts() {
         yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#b45309',font:{size:9}},title:{display:true,text:'DVOL',color:'#b45309'},min:40,max:120}
       },
       plugins:{legend:{labels:{color:T,font:{size:11}}},annotation:{annotations:wa}}
-    }
+    },
+    plugins:[syncPlugin(()=>btcChartWar)]
   });
 
   // 右：今日日内
@@ -758,7 +807,8 @@ function drawCompareCharts() {
             label:{display:true,content:'2025.4 VIX峰值 52.3',position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}}
         }}
       }
-    }
+    },
+    plugins:[syncPlugin(()=>btcChartToday)]
   });
 
   // BTC 价格子图 - 关税战
@@ -772,8 +822,9 @@ function drawCompareCharts() {
         x:{grid:{color:G},ticks:{color:T,font:{size:9}}},
         y:{grid:{color:G},ticks:{color:'#0ea5e9',font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},title:{display:true,text:'BTC ($)',color:'#0ea5e9'}}
       },
-      plugins:{legend:{display:false}}
-    }
+      plugins:{legend:{display:false},...btcTooltip(wd.btc)}
+    },
+    plugins:[syncPlugin(()=>zoomChartWar)]
   });
 
   // BTC 价格子图 - 今日日内
@@ -787,9 +838,11 @@ function drawCompareCharts() {
         x:{grid:{color:G},ticks:{color:T,font:{size:9}}},
         y:{grid:{color:G},ticks:{color:'#0ea5e9',font:{size:9},callback:v=>'$'+(v/1000).toFixed(1)+'k'},title:{display:true,text:'BTC ($)',color:'#0ea5e9'}}
       },
-      plugins:{legend:{display:false}}
-    }
+      plugins:{legend:{display:false},...btcTooltip(td.btc)}
+    },
+    plugins:[syncPlugin(()=>zoomChartToday)]
   });
+
 }
 
 // Init
