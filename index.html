@@ -182,7 +182,7 @@
 
 <div class="header">
   <h1><span class="dvol">DVOL</span> vs <span class="vix">VIX</span> 波动率套利分析</h1>
-  <p>Deribit BTC 隐含波动率指数 vs CBOE 恐慌指数 | 跨市场波动率套利分析面板</p>
+  <p>Deribit BTC 隐含波动率指数 vs CBOE 恐慌指数 | 跨市场波动率套利分析面板 | 所有时间为香港时间 (HKT)</p>
 </div>
 
 <div class="nav-tabs">
@@ -273,7 +273,7 @@
       <canvas id="chartBtcWar" height="100"></canvas>
     </div>
     <div class="compare-card right">
-      <h3 style="color:var(--accent);">2026年3月9日 今日日内走势 (逐小时)</h3>
+      <h3 style="color:var(--accent);">2026年3月9日 今日日内走势 (香港时间)</h3>
       <div class="zoom-stats">
         <div class="zoom-stat"><div class="zs-label">VIX 当前</div><div class="zs-val" style="color:var(--purple);">31.9</div></div>
         <div class="zoom-stat"><div class="zs-label">VIX 日高</div><div class="zs-val" style="color:var(--red);">33.5</div></div>
@@ -470,9 +470,9 @@ const KEY_EVENTS = [
 
 // ========== 对比面板数据 ==========
 const TODAY_INTRADAY = {
-  labels: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00',
-           '08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00',
-           '16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  labels: ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00',
+           '16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00',
+           '00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00'],
   vix:  [28.5,28.8,29.0,29.3,29.6,30.0,30.4,30.8,31.2,31.8,33.5,33.0,32.5,32.1,32.4,31.9,31.5,31.0,31.2,31.5,31.7,31.9,31.8,31.9],
   dvol: [72,73,73,74,74,75,76,77,78,79,83,82,81,80,81,80,79,78,79,80,80,80,79,80],
   btc: [82500,82400,82200,82000,81800,81500,81200,80800,80200,79500,78200,78800,79200,79500,79100,79600,80000,80300,80100,79800,79600,79500,79600,79500],
@@ -908,10 +908,10 @@ function drawCompareCharts() {
       },
       plugins:{legend:{labels:{color:T,font:{size:11}}},
         annotation:{annotations:{
-          peak:{type:'line',xMin:'10:00',xMax:'10:00',borderColor:'#dc2626',borderWidth:1.5,borderDash:[6,3],
+          peak:{type:'line',xMin:'18:00',xMax:'18:00',borderColor:'#dc2626',borderWidth:1.5,borderDash:[6,3],
             label:{display:true,content:'日内高点',position:'start',color:'#dc2626',font:{size:10,weight:'bold'},backgroundColor:LBG,padding:3}},
-          open:{type:'line',xMin:'09:00',xMax:'09:00',borderColor:'rgba(0,0,0,.15)',borderWidth:1,borderDash:[4,4],
-            label:{display:true,content:'美股盘前',position:'end',color:T,font:{size:9},backgroundColor:LBG,padding:3}},
+          open:{type:'line',xMin:'21:30',xMax:'21:30',borderColor:'rgba(0,0,0,.15)',borderWidth:1,borderDash:[4,4],
+            label:{display:true,content:'美股开盘',position:'end',color:T,font:{size:9},backgroundColor:LBG,padding:3}},
           vixRef:{type:'line',yMin:52.3,yMax:52.3,yScaleID:'yVix',borderColor:'rgba(220,38,38,.25)',borderWidth:1,borderDash:[8,4],
             label:{display:true,content:'2025.4 VIX峰值 52.3',position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}}
         }}
