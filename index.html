@@ -1420,35 +1420,35 @@ function drawCompareCharts(eventKey) {
   });
 
   // 右：对照面板
-  // 当选中 iranoil 时，右边显示关税战作为对照；选中 tradewar 时，右边显示当前期间
-  const isIranEvent = (eventKey === 'iranoil');
-  const rightData = isIranEvent ? TRADEWAR_DAILY : CURRENT_DAILY;
+  // tradewar/btccrash → 右边显示当前期间；iranoil（就是当前事件）→ 右边显示 btccrash 做对比
+  let rightData, rightTitleText, rightTitleColor;
+  if(eventKey === 'iranoil') {
+    rightData = BTCCRASH_DAILY;
+    rightTitleText = '2026年2月 BTC闪崩对照 (1/30 - 2/13)';
+    rightTitleColor = 'var(--red)';
+  } else {
+    rightData = CURRENT_DAILY;
+    rightTitleText = '2026年2-3月 本轮冲击 (2/20 - 3/9)';
+    rightTitleColor = 'var(--accent)';
+  }
   const rightLabels = rightData.labels.map((l,i)=> rightData.weekdays ? l+' '+rightData.weekdays[i] : l);
 
   // 右侧标题
   const rightTitle = document.querySelector('.compare-card.right h3');
   if(rightTitle) {
-    if(isIranEvent) {
-      rightTitle.textContent = '2025年4月 关税战对照 (4/1 - 4/30)';
-      rightTitle.style.color = 'var(--red)';
-    } else {
-      rightTitle.textContent = '2026年2-3月 本轮冲击 (2/20 - 3/9)';
-      rightTitle.style.color = 'var(--accent)';
-    }
+    rightTitle.textContent = rightTitleText;
+    rightTitle.style.color = rightTitleColor;
   }
 
   // 右侧统计
   const rightStatsDiv = document.getElementById('rightPanelStats');
   if(rightStatsDiv) {
-    if(isIranEvent) {
-      rightStatsDiv.innerHTML = `
-        <div class="zoom-stat"><div class="zs-label">VIX 峰值</div><div class="zs-val" style="color:var(--purple);">52.3</div></div>
-        <div class="zoom-stat"><div class="zs-label">VIX 起点</div><div class="zs-val" style="color:var(--purple);">21.5</div></div>
-        <div class="zoom-stat"><div class="zs-label">VIX 涨幅</div><div class="zs-val" style="color:var(--red);">+143%</div></div>
-        <div class="zoom-stat"><div class="zs-label">DVOL 峰值</div><div class="zs-val" style="color:var(--orange);">110</div></div>
-        <div class="zoom-stat"><div class="zs-label">DVOL 起点</div><div class="zs-val" style="color:var(--orange);">60</div></div>
-        <div class="zoom-stat"><div class="zs-label">恢复用时</div><div class="zs-val" style="color:var(--green);">~3周</div></div>
-      `;
+    if(eventKey === 'iranoil') {
+      // 对照 BTC 闪崩
+      const crashStats = HIST_EVENTS.btccrash.stats;
+      rightStatsDiv.innerHTML = crashStats.map(s=>
+        `<div class="zoom-stat"><div class="zs-label">${s.label}</div><div class="zs-val" style="color:${s.color};">${s.val}</div></div>`
+      ).join('');
     } else {
       updateRightPanelStats();
     }
@@ -1456,8 +1456,8 @@ function drawCompareCharts(eventKey) {
 
   // 右侧波动率图表注释
   const rightAnno = {};
-  if(isIranEvent) {
-    // 关税战的事件注释
+  if(eventKey === 'iranoil') {
+    // BTC闪崩的事件注释
     if(rightData.events) {
       Object.entries(rightData.events).forEach(([idx,label])=>{
         const xl = rightLabels[idx];
@@ -1465,13 +1465,9 @@ function drawCompareCharts(eventKey) {
           label:{display:true,content:label,position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3,rotation:-45,yAdjust:-8}};
       });
     }
-    const rightVixPeak = Math.max(...rightData.vix);
-    rightAnno.peakLine={type:'line',yMin:rightVixPeak,yMax:rightVixPeak,yScaleID:'yVix',borderColor:'rgba(220,38,38,.3)',borderWidth:1,borderDash:[8,4],
-      label:{display:true,content:'VIX 峰值 '+rightVixPeak,position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}};
-    // 当前 VIX 参考线
-    const curVixVal = CURRENT_DAILY.vix[CURRENT_DAILY.vix.length-1];
-    rightAnno.curRef={type:'line',yMin:curVixVal,yMax:curVixVal,yScaleID:'yVix',borderColor:'rgba(37,99,235,.4)',borderWidth:1,borderDash:[8,4],
-      label:{display:true,content:'当前 VIX '+curVixVal,position:'start',color:'#2563eb',font:{size:9},backgroundColor:LBG,padding:3}};
+    const rightDvolPeak = Math.max(...rightData.dvol);
+    rightAnno.peakLine={type:'line',yMin:rightDvolPeak,yMax:rightDvolPeak,yScaleID:'yDvol',borderColor:'rgba(180,83,9,.3)',borderWidth:1,borderDash:[8,4],
+      label:{display:true,content:'DVOL 峰值 '+rightDvolPeak,position:'end',color:'#b45309',font:{size:9},backgroundColor:LBG,padding:3}};
   } else {
     rightAnno.iran={type:'line',xMin:'2/28 周五',xMax:'2/28 周五',borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
       label:{display:true,content:'哈梅内伊遇袭',position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3}};
