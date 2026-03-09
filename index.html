@@ -370,8 +370,8 @@
     <div class="pill-group" id="eventPills">
       <button class="active" onclick="switchEvent('tradewar',this)">2025.4 关税战</button>
       <button onclick="switchEvent('btccrash',this)">2026.2.5 BTC闪崩</button>
-      <button onclick="switchEvent('iranoil',this)">2026.2.28 美伊冲突</button>
     </div>
+    <span style="color:var(--muted);font-size:11px;margin-left:8px;">右侧 = 当前（2026.2.28 美伊冲突·进行中）</span>
   </div>
   <div class="compare-grid">
     <div class="compare-card left">
@@ -382,7 +382,7 @@
       <canvas id="chartBtcHist" height="100"></canvas>
     </div>
     <div class="compare-card right">
-      <h3 style="color:var(--accent);">2026年2-3月 本轮冲击 (2/20 - 3/9)</h3>
+      <h3 style="color:var(--accent);">当前：2026.2.28 美伊冲突（进行中）</h3>
       <div class="zoom-stats" id="rightPanelStats"></div>
       <canvas id="chartZoomToday" height="130"></canvas>
       <h3 style="margin-top:14px;font-size:12px;color:var(--text);font-weight:700;">BTC K线</h3>
@@ -1440,61 +1440,17 @@ function drawCompareCharts(eventKey) {
     plugins:[syncPlugin(()=>btcChartHist)]
   });
 
-  // 右：对照面板
-  // tradewar/btccrash → 右边显示当前期间；iranoil（就是当前事件）→ 右边显示 btccrash 做对比
-  let rightData, rightTitleText, rightTitleColor;
-  if(eventKey === 'iranoil') {
-    rightData = BTCCRASH_DAILY;
-    rightTitleText = '2026年2月 BTC闪崩对照 (1/30 - 2/13)';
-    rightTitleColor = 'var(--red)';
-  } else {
-    rightData = CURRENT_DAILY;
-    rightTitleText = '2026年2-3月 本轮冲击 (2/20 - 3/9)';
-    rightTitleColor = 'var(--accent)';
-  }
+  // 右：永远是当前（= 美伊冲突进行中）
+  const rightData = CURRENT_DAILY;
   const rightLabels = rightData.labels.map((l,i)=> rightData.weekdays ? l+' '+rightData.weekdays[i] : l);
+  updateRightPanelStats();
 
-  // 右侧标题
-  const rightTitle = document.querySelector('.compare-card.right h3');
-  if(rightTitle) {
-    rightTitle.textContent = rightTitleText;
-    rightTitle.style.color = rightTitleColor;
-  }
-
-  // 右侧统计
-  const rightStatsDiv = document.getElementById('rightPanelStats');
-  if(rightStatsDiv) {
-    if(eventKey === 'iranoil') {
-      // 对照 BTC 闪崩
-      const crashStats = HIST_EVENTS.btccrash.stats;
-      rightStatsDiv.innerHTML = crashStats.map(s=>
-        `<div class="zoom-stat"><div class="zs-label">${s.label}</div><div class="zs-val" style="color:${s.color};">${s.val}</div></div>`
-      ).join('');
-    } else {
-      updateRightPanelStats();
-    }
-  }
-
-  // 右侧波动率图表注释
+  // 右侧波动率图表注释（当前 = 美伊冲突进行中）
   const rightAnno = {};
-  if(eventKey === 'iranoil') {
-    // BTC闪崩的事件注释
-    if(rightData.events) {
-      Object.entries(rightData.events).forEach(([idx,label])=>{
-        const xl = rightLabels[idx];
-        rightAnno['we'+idx]={type:'line',xMin:xl,xMax:xl,borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
-          label:{display:true,content:label,position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3,rotation:-45,yAdjust:-8}};
-      });
-    }
-    const rightDvolPeak = Math.max(...rightData.dvol);
-    rightAnno.peakLine={type:'line',yMin:rightDvolPeak,yMax:rightDvolPeak,yScaleID:'yDvol',borderColor:'rgba(180,83,9,.3)',borderWidth:1,borderDash:[8,4],
-      label:{display:true,content:'DVOL 峰值 '+rightDvolPeak,position:'end',color:'#b45309',font:{size:9},backgroundColor:LBG,padding:3}};
-  } else {
-    rightAnno.iran={type:'line',xMin:'2/28 周五',xMax:'2/28 周五',borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
-      label:{display:true,content:'哈梅内伊遇袭',position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3}};
-    rightAnno.vixRef={type:'line',yMin:vixPeak,yMax:vixPeak,yScaleID:'yVix',borderColor:'rgba(220,38,38,.25)',borderWidth:1,borderDash:[8,4],
-      label:{display:true,content:sm.name+' VIX峰值 '+sm.vixPeak,position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}};
-  }
+  rightAnno.iran={type:'line',xMin:'2/28 周五',xMax:'2/28 周五',borderColor:'rgba(220,38,38,.5)',borderWidth:1.5,borderDash:[4,4],
+    label:{display:true,content:'哈梅内伊遇袭',position:'start',color:'#dc2626',font:{size:9,weight:'bold'},backgroundColor:LBG,padding:3}};
+  rightAnno.vixRef={type:'line',yMin:vixPeak,yMax:vixPeak,yScaleID:'yVix',borderColor:'rgba(220,38,38,.25)',borderWidth:1,borderDash:[8,4],
+    label:{display:true,content:sm.name+' VIX峰值 '+sm.vixPeak,position:'end',color:'#dc2626',font:{size:9},backgroundColor:LBG,padding:3}};
 
   zoomChartToday = new Chart(document.getElementById('chartZoomToday'),{
     type:'line',
