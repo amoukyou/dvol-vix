@@ -1561,18 +1561,39 @@ const DataService = {
           btc: Math.round(p[1])
         }));
       }
-    } catch(e) { console.warn('BTC历史 API 失败:', e); }
+    } catch(e) { console.warn('BTC历史(CoinGecko) API 失败:', e); }
+    return null;
+  },
+
+  // Binance 公开 API 拉取 CoinGecko 365天之前的 BTC 周线数据
+  async fetchBTCHistoryBinance(startMs, endMs) {
+    try {
+      const r = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&startTime=${startMs}&endTime=${endMs}&limit=1000`);
+      const d = await r.json();
+      if (Array.isArray(d) && d.length > 0) {
+        return d.map(k => ({
+          d: new Date(k[0]).toISOString().slice(0,10),
+          btc: Math.round(parseFloat(k[4])) // index 4 = close price
+        }));
+      }
+    } catch(e) { console.warn('BTC历史(Binance) API 失败:', e); }
     return null;
   },
 
   // 用API历史数据完全替换硬编码数据
-  replaceHistoryData(btcHistory, dvolHistory) {
+  replaceHistoryData(btcHistory, dvolHistory, btcOlderHistory) {
     if (btcHistory && btcHistory.length > 30) {
-      // 完全替换 BTC_HISTORY（保留2024年CoinGecko免费API拉不到的部分）
       const apiStart = btcHistory[0].d;
-      const oldData = BTC_HISTORY.filter(p => p.d < apiStart);
       BTC_HISTORY.length = 0;
-      oldData.forEach(p => BTC_HISTORY.push(p));
+      // 先填入 Binance 拿到的更早数据（CoinGecko 覆盖不到的部分）
+      if (btcOlderHistory && btcOlderHistory.length > 0) {
+        btcOlderHistory.filter(p => p.d < apiStart).forEach(p => BTC_HISTORY.push(p));
+        console.log('BTC 2024数据(Binance):', btcOlderHistory.filter(p => p.d < apiStart).length, '天');
+      } else {
+        // fallback: 保留硬编码中 API 覆盖不到的部分
+        const hardcoded = [{d:'2024-01-02',btc:45200},{d:'2024-01-15',btc:43000},{d:'2024-01-31',btc:42500},{d:'2024-02-15',btc:52000},{d:'2024-02-29',btc:62000},{d:'2024-03-15',btc:73500},{d:'2024-03-29',btc:69500},{d:'2024-04-12',btc:67500},{d:'2024-04-19',btc:63500},{d:'2024-04-30',btc:60500},{d:'2024-05-15',btc:62000},{d:'2024-05-31',btc:67500},{d:'2024-06-14',btc:66500},{d:'2024-06-28',btc:61000},{d:'2024-07-11',btc:57500},{d:'2024-07-19',btc:63000},{d:'2024-07-31',btc:64500},{d:'2024-08-02',btc:61500},{d:'2024-08-05',btc:49500},{d:'2024-08-06',btc:55000},{d:'2024-08-09',btc:58500},{d:'2024-08-16',btc:59000},{d:'2024-08-30',btc:59000}];
+        hardcoded.filter(p => p.d < apiStart).forEach(p => BTC_HISTORY.push(p));
+      }
       btcHistory.forEach(p => BTC_HISTORY.push(p));
       console.log('BTC历史已更新:', BTC_HISTORY.length, '个数据点');
     }
@@ -1650,20 +1671,24 @@ async function init() {
   // 先用硬编码数据立即渲染（用户不用等API）
   regenerate();
 
-  // 第一步：拉取完整历史数据（BTC 365天 + DVOL 540天）替换硬编码
+  // 第一步：拉取完整历史数据（BTC 365天 + DVOL 540天 + Binance补2024）替换硬编码
   showStatus('正在从 API 加载历史数据...');
-  const [btcHistory, dvolHistory, btcPrice, dvolPrice] = await Promise.all([
+  // Binance: 2024-01-01 到 CoinGecko 覆盖起点（约365天前）
+  const binanceEnd = Date.now() - 364 * 24 * 3600 * 1000;
+  const binanceStart = new Date('2024-01-01').getTime();
+  const [btcHistory, dvolHistory, btcPrice, dvolPrice, btcOlderHistory] = await Promise.all([
     DataService.fetchBTCHistory(365),
     DataService.fetchDVOLHistory(540),
     DataService.fetchBTCPrice(),
-    DataService.fetchDVOL()
+    DataService.fetchDVOL(),
+    DataService.fetchBTCHistoryBinance(binanceStart, binanceEnd)
   ]);
 
   let updated = false;
 
   // 替换历史走势数据
   if (btcHistory || dvolHistory) {
-    DataService.replaceHistoryData(btcHistory, dvolHistory);
+    DataService.replaceHistoryData(btcHistory, dvolHistory, btcOlderHistory);
     updated = true;
   }
 
@@ -1677,7 +1702,8 @@ async function init() {
     updateRightPanelStats();
     updateSyncTimestamps(btcPrice, dvolPrice);
     const parts = [];
-    if (btcHistory) parts.push('BTC历史 ' + btcHistory.length + '天');
+    if (btcOlderHistory) parts.push('BTC 2024(Binance) ' + btcOlderHistory.length + '天');
+    if (btcHistory) parts.push('BTC近1年(CoinGecko) ' + btcHistory.length + '天');
     if (dvolHistory) parts.push('DVOL历史 ' + dvolHistory.length + '天');
     if (btcPrice) parts.push('BTC $' + Math.round(btcPrice.price).toLocaleString());
     if (dvolPrice) parts.push('DVOL ' + dvolPrice.value);
@@ -1731,12 +1757,15 @@ setInterval(async () => {
 
 // 每30分钟重新拉取一次历史数据（防止长时间开着页面数据过期）
 setInterval(async () => {
-  const [btcHistory, dvolHistory] = await Promise.all([
+  const binanceEnd = Date.now() - 364 * 24 * 3600 * 1000;
+  const binanceStart = new Date('2024-01-01').getTime();
+  const [btcHistory, dvolHistory, btcOlder] = await Promise.all([
     DataService.fetchBTCHistory(365),
-    DataService.fetchDVOLHistory(540)
+    DataService.fetchDVOLHistory(540),
+    DataService.fetchBTCHistoryBinance(binanceStart, binanceEnd)
   ]);
   if (btcHistory || dvolHistory) {
-    DataService.replaceHistoryData(btcHistory, dvolHistory);
+    DataService.replaceHistoryData(btcHistory, dvolHistory, btcOlder);
     regenerate();
   }
 }, 1800000);
