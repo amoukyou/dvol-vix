@@ -630,8 +630,8 @@
     <ul>
       <li><b>DVOL:</b> Deribit <code>public/get_volatility_index_data</code> API，24/7，每 60 秒刷新。返回 candle timestamp，页面显示 source time (UTC)。历史受 API 540 天限制，2024 年前为估算值</li>
       <li><b>BTC:</b> CoinGecko API（近 365 天）+ Binance <code>klines</code> API（2024 年），每 60 秒刷新实时价。页面显示 fetch timestamp</li>
-      <li><b>VIX:</b> 硬编码更新，非实时。Cboe 官方 VIX 现货数据本身也标注 "delayed at least 20 minutes"。VIX 仅在美股交易时段有报价（ET 时间），与 24/7 的 DVOL 存在结构性时间错配</li>
-      <li><b>时间同步：</b>DVOL 是 24/7 的，VIX 是 5×6.5h (ET) 的。当 VIX 数据陈旧（>24h），页面自动将价差/比率/信号卡片标记为 stale 并暂停信号输出。请关注顶部各数据源的 source timestamp</li>
+      <li><b>VIX:</b> Yahoo Finance API 自动拉取（<code>^VIX</code> 日线数据，delayed ≥20min）。每 30 分钟刷新一次历史，Cboe 仅在 ET 交易时段报价。若 Yahoo API 失败则降级为硬编码 fallback</li>
+      <li><b>时间同步：</b>DVOL 是 24/7 的，VIX 是 5×6.5h (ET) 的。当 VIX 数据陈旧（>48h，容忍周末），页面自动将价差/比率/信号标记为 stale 并暂停信号输出。请关注顶部各数据源的 source timestamp</li>
       <li><b>时区规范：</b>所有"Day N"均以 event_date 00:00 UTC 为 Day 0，day_number = floor((now_UTC - event_date_UTC) / 86400)。VIX 展示值为 ET 时区收盘，BTC/DVOL 为 UTC</li>
       <li><b>样本量：</b>DVOL 自 2021 年上线，可用历史约 4-5 年，统计检验力有限</li>
       <li><b>触发条件基准：</b>所有涉及 VIX 阈值的条件（如 VIX>35），触发基准为 Cboe 当日 official close（非盘中现值/非开盘价）。在收盘确认前，条件标记为 pending</li>
@@ -641,7 +641,7 @@
 </div><!-- /tab-info -->
 
 <div class="footer">
-  BTC: CoinGecko + Binance | DVOL: Deribit API | VIX: 硬编码 (Cboe official close, delayed ≥20min) | 三者存在结构性时间错配 | 相对价值研究，非无风险套利 | 不构成投资建议
+  BTC: CoinGecko + Binance | DVOL: Deribit API | VIX: Yahoo Finance (Cboe official close, delayed ≥20min) | DVOL 24/7 vs VIX 5×6.5h 存在结构性时间错配 | 不构成投资建议
 </div>
 
 <script>
@@ -980,9 +980,9 @@ function updateMetrics(data) {
   document.getElementById('m-spread-avg').style.color=sp>avgSp?'var(--orange)':'var(--green)';
   const spZ=(sp-avgSp)/std(data.spread), rtZ=(rt-mean(data.ratio))/std(data.ratio), lastCorr=data.corr[last]||0;
 
-  // 检测 VIX 是否陈旧（>24h）
+  // 检测 VIX 是否陈旧（>48h，容忍周末）
   const lastVixEntry = VIX_HISTORY[VIX_HISTORY.length-1];
-  const vixStale = lastVixEntry ? ((Date.now() - new Date(lastVixEntry.d+'T16:00:00-05:00')) / 3600000 > 24) : true;
+  const vixStale = lastVixEntry ? ((Date.now() - new Date(lastVixEntry.d+'T16:00:00-05:00')) / 3600000 > 48) : true;
   const stalePrefix = vixStale ? '[VIX stale] ' : '';
   const staleClass = vixStale ? 'neutral' : '';
 
@@ -1527,6 +1527,32 @@ function drawCompareCharts(eventKey) {
 const DataService = {
   lastBTC: null,
   lastDVOL: null,
+  lastVIX: null,
+
+  // Yahoo Finance VIX 历史数据（免费，delayed ≥20min）
+  async fetchVIXHistory(range) {
+    try {
+      const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=${range||'2y'}`);
+      const d = await r.json();
+      if (d.chart && d.chart.result && d.chart.result[0]) {
+        const res = d.chart.result[0];
+        const ts = res.timestamp;
+        const closes = res.indicators.quote[0].close;
+        if (!ts || !closes) return null;
+        const result = [];
+        for (let i = 0; i < ts.length; i++) {
+          if (closes[i] == null) continue;
+          const date = new Date(ts[i] * 1000).toISOString().slice(0,10);
+          result.push({d: date, vix: +closes[i].toFixed(1)});
+        }
+        if (result.length > 0) {
+          this.lastVIX = {value: result[result.length-1].vix, date: result[result.length-1].d};
+        }
+        return result;
+      }
+    } catch(e) { console.warn('VIX历史(Yahoo) API 失败:', e); }
+    return null;
+  },
 
   async fetchBTCPrice() {
     try {
@@ -1602,7 +1628,16 @@ const DataService = {
   },
 
   // 用API历史数据完全替换硬编码数据
-  replaceHistoryData(btcHistory, dvolHistory, btcOlderHistory) {
+  replaceHistoryData(btcHistory, dvolHistory, btcOlderHistory, vixHistory) {
+    // VIX: Yahoo Finance 数据替换硬编码
+    if (vixHistory && vixHistory.length > 30) {
+      const apiStart = vixHistory[0].d;
+      const oldVix = VIX_HISTORY.filter(p => p.d < apiStart);
+      VIX_HISTORY.length = 0;
+      oldVix.forEach(p => VIX_HISTORY.push(p));
+      vixHistory.forEach(p => VIX_HISTORY.push(p));
+      console.log('VIX历史已更新(Yahoo Finance):', VIX_HISTORY.length, '个数据点');
+    }
     if (btcHistory && btcHistory.length > 30) {
       const apiStart = btcHistory[0].d;
       BTC_HISTORY.length = 0;
@@ -1697,19 +1732,20 @@ async function init() {
   // Binance: 2024-01-01 到 CoinGecko 覆盖起点（约365天前）
   const binanceEnd = Date.now() - 364 * 24 * 3600 * 1000;
   const binanceStart = new Date('2024-01-01').getTime();
-  const [btcHistory, dvolHistory, btcPrice, dvolPrice, btcOlderHistory] = await Promise.all([
+  const [btcHistory, dvolHistory, btcPrice, dvolPrice, btcOlderHistory, vixHistory] = await Promise.all([
     DataService.fetchBTCHistory(365),
     DataService.fetchDVOLHistory(540),
     DataService.fetchBTCPrice(),
     DataService.fetchDVOL(),
-    DataService.fetchBTCHistoryBinance(binanceStart, binanceEnd)
+    DataService.fetchBTCHistoryBinance(binanceStart, binanceEnd),
+    DataService.fetchVIXHistory('2y')
   ]);
 
   let updated = false;
 
   // 替换历史走势数据
-  if (btcHistory || dvolHistory) {
-    DataService.replaceHistoryData(btcHistory, dvolHistory, btcOlderHistory);
+  if (btcHistory || dvolHistory || vixHistory) {
+    DataService.replaceHistoryData(btcHistory, dvolHistory, btcOlderHistory, vixHistory);
     updated = true;
   }
 
@@ -1723,9 +1759,10 @@ async function init() {
     updateRightPanelStats();
     updateSyncTimestamps(btcPrice, dvolPrice);
     const parts = [];
+    if (vixHistory) parts.push('VIX(Yahoo) ' + vixHistory.length + '天');
     if (btcOlderHistory) parts.push('BTC 2024(Binance) ' + btcOlderHistory.length + '天');
     if (btcHistory) parts.push('BTC近1年(CoinGecko) ' + btcHistory.length + '天');
-    if (dvolHistory) parts.push('DVOL历史 ' + dvolHistory.length + '天');
+    if (dvolHistory) parts.push('DVOL(Deribit) ' + dvolHistory.length + '天');
     if (btcPrice) parts.push('BTC $' + Math.round(btcPrice.price).toLocaleString());
     if (dvolPrice) parts.push('DVOL ' + dvolPrice.value);
     showStatus('API 数据已加载: ' + parts.join(' | ') + ' (' + new Date().toLocaleTimeString('zh-CN') + ')');
@@ -1760,20 +1797,24 @@ function updateSyncTimestamps(btcData, dvolData) {
   const vixEl = document.getElementById('syncTimeVix');
   const vixDot = document.getElementById('syncDotVix');
   let vixStale = true;
+  const vixFromYahoo = DataService.lastVIX !== null;
   if(lastVix) {
     const vixDate = new Date(lastVix.d + 'T16:00:00-05:00'); // ET close
     const hoursAgo = (now - vixDate) / 3600000;
-    vixStale = hoursAgo > 24;
-    if(vixEl) vixEl.textContent = lastVix.d + ' ET close (硬编码' + (vixStale ? ', >24h 陈旧' : '') + ')';
-    if(vixDot) vixDot.className = vixStale ? 'sync-dot stale' : 'sync-dot manual';
+    vixStale = hoursAgo > 48; // 周末容忍48h
+    const src = vixFromYahoo ? 'Yahoo Finance' : '硬编码';
+    if(vixEl) vixEl.textContent = lastVix.d + ' ' + lastVix.vix + ' ET close (' + src + (vixStale ? ', 陈旧' : ', delayed ≥20min') + ')';
+    if(vixDot) vixDot.className = vixStale ? 'sync-dot stale' : (vixFromYahoo ? 'sync-dot live' : 'sync-dot manual');
   }
   // 同步状态
   const syncStatus = document.getElementById('syncStatus');
   if(syncStatus) {
     if(vixStale) {
-      syncStatus.innerHTML = '<span class="sync-badge warn">VIX 陈旧 — 价差/比率/信号可能不准确</span>';
+      syncStatus.innerHTML = '<span class="sync-badge warn">VIX 数据陈旧 — 价差/比率/信号可能不准确</span>';
+    } else if(vixFromYahoo) {
+      syncStatus.innerHTML = '<span class="sync-badge ok">三源同步 (VIX delayed ≥20min)</span>';
     } else {
-      syncStatus.innerHTML = '<span class="sync-badge warn">VIX 非实时 (delayed ≥20min) — 信号仅供参考</span>';
+      syncStatus.innerHTML = '<span class="sync-badge warn">VIX 硬编码 — 信号仅供参考</span>';
     }
   }
   // Day count for Iran event
@@ -1808,13 +1849,14 @@ setInterval(async () => {
 setInterval(async () => {
   const binanceEnd = Date.now() - 364 * 24 * 3600 * 1000;
   const binanceStart = new Date('2024-01-01').getTime();
-  const [btcHistory, dvolHistory, btcOlder] = await Promise.all([
+  const [btcHistory, dvolHistory, btcOlder, vixHistory] = await Promise.all([
     DataService.fetchBTCHistory(365),
     DataService.fetchDVOLHistory(540),
-    DataService.fetchBTCHistoryBinance(binanceStart, binanceEnd)
+    DataService.fetchBTCHistoryBinance(binanceStart, binanceEnd),
+    DataService.fetchVIXHistory('2y')
   ]);
-  if (btcHistory || dvolHistory) {
-    DataService.replaceHistoryData(btcHistory, dvolHistory, btcOlder);
+  if (btcHistory || dvolHistory || vixHistory) {
+    DataService.replaceHistoryData(btcHistory, dvolHistory, btcOlder, vixHistory);
     regenerate();
   }
 }, 1800000);
