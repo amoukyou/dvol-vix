@@ -43,6 +43,32 @@
   .controls button:hover, .controls button.active {
     border-color:var(--accent); color:var(--accent);
   }
+  .controls button.zoom-btn {
+    background:rgba(248,81,73,.1); border-color:var(--red); color:var(--red);
+    font-weight:700;
+  }
+  .controls button.zoom-btn:hover, .controls button.zoom-btn.active {
+    background:rgba(248,81,73,.25); border-color:var(--red); color:var(--red);
+  }
+  .zoom-panel {
+    padding:0 24px 16px;
+  }
+  .zoom-panel .chart-box {
+    border-color:var(--red);
+  }
+  .zoom-panel .chart-box h3 {
+    color:var(--red); font-size:15px; font-weight:600;
+  }
+  .zoom-panel .zoom-stats {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:10px; margin-bottom:14px;
+  }
+  .zoom-panel .zoom-stat {
+    background:rgba(248,81,73,.06); border:1px solid rgba(248,81,73,.2);
+    border-radius:6px; padding:10px 14px; text-align:center;
+  }
+  .zoom-panel .zoom-stat .zs-label { font-size:11px; color:var(--muted); }
+  .zoom-panel .zoom-stat .zs-val { font-size:20px; font-weight:700; margin-top:2px; }
 
   .dashboard {
     display:grid;
@@ -145,6 +171,41 @@
   <button onclick="setRange(540,this)">18个月</button>
   <button onclick="setRange(800,this)">全部 (2024起)</button>
   <button onclick="regenerate()" style="border-color:var(--accent);color:var(--accent);">刷新数据</button>
+  <span style="color:var(--border);padding:0 4px;">|</span>
+  <button class="zoom-btn" onclick="zoomToday(this)">今日日内</button>
+  <button class="zoom-btn" onclick="zoomTradeWar(this)">2025.4 关税战</button>
+</div>
+
+<!-- 放大面板：今日日内 -->
+<div class="zoom-panel" id="zoom-today-panel" style="display:none;">
+  <div class="chart-box full">
+    <h3>2026年3月9日 今日日内走势 (逐小时)</h3>
+    <div class="zoom-stats">
+      <div class="zoom-stat"><div class="zs-label">VIX 盘前</div><div class="zs-val" style="color:var(--purple);">42.8</div></div>
+      <div class="zoom-stat"><div class="zs-label">VIX 开盘预估</div><div class="zs-val" style="color:var(--purple);">41.5</div></div>
+      <div class="zoom-stat"><div class="zs-label">VIX 日内高</div><div class="zs-val" style="color:var(--red);">44.2</div></div>
+      <div class="zoom-stat"><div class="zs-label">DVOL 当前</div><div class="zs-val" style="color:var(--orange);">108</div></div>
+      <div class="zoom-stat"><div class="zs-label">DVOL 日内高</div><div class="zs-val" style="color:var(--red);">112</div></div>
+      <div class="zoom-stat"><div class="zs-label">价差</div><div class="zs-val" style="color:var(--accent);">65.2</div></div>
+    </div>
+    <canvas id="chartZoomToday" height="130"></canvas>
+  </div>
+</div>
+
+<!-- 放大面板：2025.4 关税战 -->
+<div class="zoom-panel" id="zoom-tradewar-panel" style="display:none;">
+  <div class="chart-box full">
+    <h3>2025年4月 贸易战关税冲击全程 (4/1 - 4/30)</h3>
+    <div class="zoom-stats">
+      <div class="zoom-stat"><div class="zs-label">VIX 峰值</div><div class="zs-val" style="color:var(--red);">52.3</div></div>
+      <div class="zoom-stat"><div class="zs-label">VIX 起点</div><div class="zs-val" style="color:var(--purple);">21.5</div></div>
+      <div class="zoom-stat"><div class="zs-label">VIX 最大涨幅</div><div class="zs-val" style="color:var(--red);">+143%</div></div>
+      <div class="zoom-stat"><div class="zs-label">DVOL 峰值</div><div class="zs-val" style="color:var(--red);">110</div></div>
+      <div class="zoom-stat"><div class="zs-label">DVOL 起点</div><div class="zs-val" style="color:var(--orange);">60</div></div>
+      <div class="zoom-stat"><div class="zs-label">恢复用时</div><div class="zs-val" style="color:var(--green);">~3周</div></div>
+    </div>
+    <canvas id="chartZoomWar" height="130"></canvas>
+  </div>
 </div>
 
 <div class="dashboard">
@@ -738,6 +799,166 @@ function regenerate() {
   const data = generateData(currentDays);
   updateMetrics(data);
   drawCharts(data);
+}
+
+// ======== 放大图表数据 ========
+
+// 今日日内（2026-03-09）逐小时数据
+const TODAY_INTRADAY = {
+  labels: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00',
+           '08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00',
+           '16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'],
+  vix:  [38.5,38.9,39.2,39.8,40.1,40.5,41.2,41.8,42.5,43.1,44.2,43.8,43.2,42.9,43.5,42.8,42.1,41.5,41.8,42.2,42.5,42.8,42.6,42.8],
+  dvol: [98, 99, 100,101,102,103,104,105,106,108,112,110,109,108,110,108,107,106,107,108,108,108,107,108]
+};
+
+// 2025年4月关税战逐日详细数据
+const TRADEWAR_DAILY = {
+  labels: ['4/1','4/2','4/3','4/4','4/7','4/8','4/9','4/10','4/11',
+           '4/14','4/15','4/16','4/17','4/18','4/21','4/22','4/23',
+           '4/24','4/25','4/28','4/29','4/30'],
+  vix:  [22.3,21.5,30.0,45.3,46.9,52.3,33.6,40.7,37.6,
+         30.1,29.5,28.2,32.6,31.5,34.1,33.8,30.2,
+         28.4,26.5,25.8,25.2,24.7],
+  dvol: [58, 60, 75, 95, 105,110,82, 90, 85,
+         72, 70, 68, 78, 75, 77, 75, 70,
+         65, 62, 60, 59, 58],
+  events: {
+    2:  '对等关税公布',
+    3:  '关税正式生效',
+    4:  '中国报复加征',
+    5:  'VIX 峰值 52.3',
+    6:  '90天暂缓宣布',
+    9:  '市场初步企稳'
+  }
+};
+
+let zoomChartToday = null;
+let zoomChartWar = null;
+
+function zoomToday(btn) {
+  const panel = document.getElementById('zoom-today-panel');
+  const warPanel = document.getElementById('zoom-tradewar-panel');
+  const isVisible = panel.style.display !== 'none';
+
+  // 关闭另一个
+  warPanel.style.display = 'none';
+  document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.remove('active'));
+
+  if (isVisible) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+  btn.classList.add('active');
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+
+  if (zoomChartToday) zoomChartToday.destroy();
+
+  const gridColor = 'rgba(48,54,61,0.6)';
+  const tickColor = '#8b949e';
+  const d = TODAY_INTRADAY;
+
+  zoomChartToday = new Chart(document.getElementById('chartZoomToday'),{
+    type:'line',
+    data:{
+      labels: d.labels,
+      datasets:[
+        {label:'DVOL',data:d.dvol,borderColor:'#d29922',backgroundColor:'rgba(210,153,34,.1)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#d29922',tension:.3,yAxisID:'yDvol'},
+        {label:'VIX (盘前/预估)',data:d.vix,borderColor:'#bc8cff',backgroundColor:'rgba(188,140,255,.1)',fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#bc8cff',tension:.3,yAxisID:'yVix'}
+      ]
+    },
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:11}}},
+        yVix:{position:'left',grid:{color:gridColor},ticks:{color:'#bc8cff'},title:{display:true,text:'VIX',color:'#bc8cff'}},
+        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#d29922'},title:{display:true,text:'DVOL',color:'#d29922'}}
+      },
+      plugins:{
+        legend:{labels:{color:tickColor,font:{size:12}}},
+        annotation:{
+          annotations:{
+            now:{type:'line',xMin:'10:00',xMax:'10:00',borderColor:'var(--red)',borderWidth:2,borderDash:[6,3],
+              label:{display:true,content:'日内高点',position:'start',color:'#f85149',font:{size:11,weight:'bold'},backgroundColor:'rgba(13,17,23,0.9)',padding:4}
+            },
+            open:{type:'line',xMin:'09:00',xMax:'09:00',borderColor:'rgba(255,255,255,.3)',borderWidth:1,borderDash:[4,4],
+              label:{display:true,content:'美股盘前',position:'end',color:tickColor,font:{size:10},backgroundColor:'rgba(13,17,23,0.9)',padding:3}
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function zoomTradeWar(btn) {
+  const panel = document.getElementById('zoom-tradewar-panel');
+  const todayPanel = document.getElementById('zoom-today-panel');
+  const isVisible = panel.style.display !== 'none';
+
+  todayPanel.style.display = 'none';
+  document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.remove('active'));
+
+  if (isVisible) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+  btn.classList.add('active');
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+
+  if (zoomChartWar) zoomChartWar.destroy();
+
+  const gridColor = 'rgba(48,54,61,0.6)';
+  const tickColor = '#8b949e';
+  const d = TRADEWAR_DAILY;
+
+  // 构建事件标注
+  const warAnnotations = {};
+  Object.entries(d.events).forEach(([idx, label])=>{
+    warAnnotations['we'+idx] = {
+      type:'line', xMin:d.labels[idx], xMax:d.labels[idx],
+      borderColor:'rgba(248,81,73,.6)', borderWidth:1.5, borderDash:[4,4],
+      label:{display:true, content:label, position:'start', color:'#f85149',
+        font:{size:10,weight:'bold'}, backgroundColor:'rgba(13,17,23,0.9)', padding:4,
+        rotation:-45, yAdjust:-10}
+    };
+  });
+  // VIX=52 峰值水平线
+  warAnnotations['peakLine'] = {
+    type:'line', yMin:52.3, yMax:52.3, yScaleID:'yVix',
+    borderColor:'rgba(248,81,73,.4)', borderWidth:1, borderDash:[8,4],
+    label:{display:true, content:'VIX 峰值 52.3', position:'end', color:'#f85149',
+      font:{size:10}, backgroundColor:'rgba(13,17,23,0.8)', padding:3}
+  };
+
+  zoomChartWar = new Chart(document.getElementById('chartZoomWar'),{
+    type:'line',
+    data:{
+      labels: d.labels,
+      datasets:[
+        {label:'DVOL',data:d.dvol,borderColor:'#d29922',backgroundColor:'rgba(210,153,34,.1)',fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#d29922',tension:.3,yAxisID:'yDvol'},
+        {label:'VIX',data:d.vix,borderColor:'#bc8cff',backgroundColor:'rgba(188,140,255,.1)',fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#bc8cff',tension:.3,yAxisID:'yVix'}
+      ]
+    },
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:11,weight:'bold'}}},
+        yVix:{position:'left',grid:{color:gridColor},ticks:{color:'#bc8cff'},title:{display:true,text:'VIX',color:'#bc8cff'},min:15,max:60},
+        yDvol:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#d29922'},title:{display:true,text:'DVOL',color:'#d29922'},min:40,max:120}
+      },
+      plugins:{
+        legend:{labels:{color:tickColor,font:{size:12}}},
+        annotation:{annotations:warAnnotations}
+      }
+    }
+  });
 }
 
 // Init
